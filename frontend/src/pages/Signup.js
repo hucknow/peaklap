@@ -32,11 +32,18 @@ export default function Signup() {
       return;
     }
     
-    // Success - show persistent message
+    // If user was created and session exists, redirect to onboarding
+    if (data?.user && data?.session) {
+      // User is logged in, redirect to home (which will redirect to onboarding)
+      navigate('/home');
+      return;
+    }
+    
+    // If no session (email confirmation required), show message
     setMessage({ 
       type: 'success', 
-      text: 'Account created! Check your email to verify your account before signing in.',
-      showEmailHint: true
+      text: 'Account created! You can now sign in.',
+      showSignIn: true
     });
     setLoading(false);
   };
@@ -90,15 +97,7 @@ export default function Signup() {
                 >
                   {message.text}
                 </p>
-                {message.showEmailHint && (
-                  <div className="mt-3 flex items-center gap-2">
-                    <Mail size={16} style={{ color: 'rgba(255,255,255,0.6)' }} />
-                    <p className="text-xs" style={{ color: 'rgba(255,255,255,0.6)' }}>
-                      Check your inbox and spam folder
-                    </p>
-                  </div>
-                )}
-                {message.type === 'success' && (
+                {message.showSignIn && (
                   <Link 
                     to="/login" 
                     className="inline-block mt-3 text-sm font-semibold px-4 py-2 rounded-full transition-all hover:opacity-80"
