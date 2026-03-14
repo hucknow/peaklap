@@ -121,7 +121,7 @@ The seed data script includes policies that allow:
 Once setup is complete:
 
 1. **Test Signup/Login**: 
-   - Go to https://code-review-preview.preview.emergentagent.com/signup
+   - Go to https://peak-session.preview.emergentagent.com/signup
    - Create an account (should work immediately with email verification disabled)
    - Login and complete onboarding
 

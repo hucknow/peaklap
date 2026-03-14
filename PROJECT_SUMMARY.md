@@ -210,7 +210,7 @@ All tables have Row Level Security policies configured.
 - Row Level Security policies
 
 **Deployment**:
-- Frontend: Emergent Preview (https://code-review-preview.preview.emergentagent.com)
+- Frontend: Emergent Preview (https://peak-session.preview.emergentagent.com)
 - Database: Supabase Cloud
 
 ---
@@ -229,9 +229,9 @@ All tables have Row Level Security policies configured.
 
 ## 📱 Testing URLs
 
-- **Login**: https://code-review-preview.preview.emergentagent.com/login
-- **Signup**: https://code-review-preview.preview.emergentagent.com/signup
-- **Home**: https://code-review-preview.preview.emergentagent.com/home (after auth)
+- **Login**: https://peak-session.preview.emergentagent.com/login
+- **Signup**: https://peak-session.preview.emergentagent.com/signup
+- **Home**: https://peak-session.preview.emergentagent.com/home (after auth)
 
 Test credentials (after you create them):
 - Email: test@sendit.app

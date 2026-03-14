@@ -180,7 +180,7 @@ echo -e "\n=== Recent Compilation ==="
 tail -n 10 /var/log/supervisor/frontend.out.log | grep "Compiled"
 
 echo -e "\n=== Test URL ==="
-curl -I https://code-review-preview.preview.emergentagent.com
+curl -I https://peak-session.preview.emergentagent.com
 ```
 
 If frontend shows RUNNING and compilation shows "Compiled successfully!", the issue is definitely browser cache.
