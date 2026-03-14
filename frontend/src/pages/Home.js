@@ -38,7 +38,7 @@ export default function Home() {
     if (hour < 12) {
       return { text: `First chair energy, ${name}!`, emoji: '🌅' };
     } else if (hour < 17) {
-      return { text: `Perfect conditions await, ${name}!`, emoji: '⛷️' };
+      return { text: `The mountain is waiting, ${name} — go own it.`, emoji: '⛷️' };
     } else {
       return { text: `Après time, ${name}!`, emoji: '🏔️' };
     }
@@ -272,24 +272,6 @@ export default function Home() {
         >
           {format(new Date(), 'EEEE, MMMM d')} →
         </button>
-
-        {/* Selected Resort Snow Widget */}
-        {selectedResort && (
-          <div 
-            className="mt-3 inline-flex items-center gap-2 px-3 py-2 rounded-full cursor-pointer transition-all hover:bg-white/10"
-            style={{ backgroundColor: 'rgba(255,255,255,0.05)' }}
-            onClick={() => navigate('/resorts')}
-            data-testid="home-resort-widget"
-          >
-            <Snowflake size={14} style={{ color: '#00B4D8' }} />
-            <span className="text-xs" style={{ color: 'rgba(255,255,255,0.8)', fontFamily: 'Manrope, sans-serif' }}>
-              {selectedResort.name}
-            </span>
-            <span className="text-xs px-2 py-0.5 rounded-full" style={{ backgroundColor: 'rgba(0, 180, 216, 0.2)', color: '#00B4D8' }}>
-              Fresh snow
-            </span>
-          </div>
-        )}
       </div>
 
       {/* Show Empty State or Regular Content */}
