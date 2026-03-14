@@ -7,6 +7,7 @@ import { GlassCard } from '@/components/GlassCard';
 import { DifficultyBadge } from '@/components/DifficultyBadge';
 import { DaySummary } from '@/components/DaySummary';
 import { TrailMap } from '@/components/TrailMap';
+import { StatsSection } from '@/components/StatsSection';
 import { supabase } from '@/lib/supabase';
 import { useDaySummary } from '@/lib/hooks';
 import { format, parseISO, isToday as checkIsToday } from 'date-fns';
@@ -170,47 +171,14 @@ export default function History() {
           History
         </h1>
 
-        {/* Season Summary */}
-        <GlassCard className="p-6 mb-6" style={{ backgroundColor: '#1A2126' }}>
-          <h2 className="text-sm font-medium mb-4 text-white" style={{ fontFamily: 'Manrope, sans-serif' }}>
-            Season Summary
-          </h2>
-          <div className="grid grid-cols-3 gap-4">
-            <div className="text-center">
-              <div className="flex justify-center mb-2">
-                <Calendar size={18} style={{ color: '#00B4D8' }} />
-              </div>
-              <div className="text-2xl font-bold text-white" style={{ fontFamily: 'JetBrains Mono, monospace' }}>
-                {stats.totalDays}
-              </div>
-              <div className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.6)' }}>
-                Days Out
-              </div>
-            </div>
-            <div className="text-center">
-              <div className="flex justify-center mb-2">
-                <TrendingUp size={18} style={{ color: '#00B4D8' }} />
-              </div>
-              <div className="text-2xl font-bold" style={{ fontFamily: 'JetBrains Mono, monospace', color: '#00B4D8' }}>
-                {stats.totalVertical.toLocaleString()}
-              </div>
-              <div className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.6)' }}>
-                Vertical ft
-              </div>
-            </div>
-            <div className="text-center">
-              <div className="flex justify-center mb-2">
-                <Mountain size={18} style={{ color: '#00B4D8' }} />
-              </div>
-              <div className="text-2xl font-bold text-white" style={{ fontFamily: 'JetBrains Mono, monospace' }}>
-                {stats.totalRuns}
-              </div>
-              <div className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.6)' }}>
-                Total Runs
-              </div>
-            </div>
-          </div>
-        </GlassCard>
+        {/* Stats Section with Toggle (same as Home page but without Snow Stake) */}
+        <div className="mb-6">
+          <StatsSection 
+            profile={profile} 
+            selectedResort={selectedResort} 
+            showSnowStake={false}
+          />
+        </div>
 
         {/* Trail Map */}
         {selectedResort && (

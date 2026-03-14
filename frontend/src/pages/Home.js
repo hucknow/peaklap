@@ -8,6 +8,7 @@ import { GlassCard } from '@/components/GlassCard';
 import { SnowStake, SnowStakeCompact } from '@/components/SnowStake';
 import { DifficultyBadge } from '@/components/DifficultyBadge';
 import { TrailMap } from '@/components/TrailMap';
+import { StatsSection } from '@/components/StatsSection';
 import { supabase } from '@/lib/supabase';
 import { format } from 'date-fns';
 import { Heart, Mountain, TrendingUp, MapPin, Snowflake, Plus } from 'lucide-react';
@@ -296,103 +297,13 @@ export default function Home() {
         <EmptyStateHero />
       ) : (
         <>
-          {/* Snow Stake + Stats Row - Side by Side Layout */}
+          {/* Stats Section with Toggle */}
           <div className="px-6 py-4">
-            <div className="flex gap-4">
-              {/* Snow Stake - Left Side (compact) */}
-              <div className="flex-shrink-0">
-                <SnowStakeCompact
-                  daysLogged={stats.daysLogged}
-                  goalDays={profile?.season_goal_days || 0}
-                  verticalLogged={stats.verticalLogged}
-                  goalVertical={profile?.season_goal_vertical_ft || 0}
-                />
-              </div>
-
-              {/* Stats - Right Side (vertical stack) */}
-              <div className="flex-1 flex flex-col gap-2">
-                {/* Runs Card */}
-                <GlassCard 
-                  className="p-3 cursor-pointer transition-all hover:scale-[1.02] hover:bg-white/10"
-                  onClick={() => navigate('/history')}
-                  data-testid="stat-runs"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg" style={{ backgroundColor: 'rgba(0, 180, 216, 0.1)' }}>
-                      <MapPin size={18} style={{ color: '#00B4D8' }} />
-                    </div>
-                    <div className="flex-1">
-                      <div className="text-lg font-bold text-white" style={{ fontFamily: 'JetBrains Mono, monospace' }}>
-                        {stats.daysLogged}
-                      </div>
-                      <div className="text-xs" style={{ color: 'rgba(255,255,255,0.6)', fontFamily: 'Manrope, sans-serif' }}>
-                        Runs Logged
-                      </div>
-                    </div>
-                  </div>
-                </GlassCard>
-
-                {/* Vertical Card - Prominent */}
-                <GlassCard 
-                  className="p-3 cursor-pointer transition-all hover:scale-[1.02] hover:bg-white/10"
-                  style={{ 
-                    border: '1px solid rgba(0, 180, 216, 0.3)',
-                    background: 'linear-gradient(135deg, rgba(0, 180, 216, 0.08) 0%, rgba(26, 33, 38, 0.5) 100%)'
-                  }}
-                  onClick={() => navigate('/history')}
-                  data-testid="stat-vertical"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg" style={{ backgroundColor: 'rgba(0, 180, 216, 0.15)' }}>
-                      <TrendingUp size={18} style={{ color: '#00B4D8' }} />
-                    </div>
-                    <div className="flex-1">
-                      <div className="text-lg font-bold" style={{ fontFamily: 'JetBrains Mono, monospace', color: '#00B4D8' }}>
-                        {stats.verticalLogged.toLocaleString()}
-                        <span className="text-xs ml-1" style={{ color: 'rgba(255,255,255,0.5)' }}>ft</span>
-                      </div>
-                      <div className="text-xs" style={{ color: 'rgba(255,255,255,0.8)', fontFamily: 'Manrope, sans-serif' }}>
-                        Vertical Skied
-                      </div>
-                    </div>
-                  </div>
-                </GlassCard>
-
-                {/* Mountain Progress Card */}
-                <GlassCard 
-                  className="p-3 cursor-pointer transition-all hover:scale-[1.02] hover:bg-white/10"
-                  onClick={() => navigate('/resorts')}
-                  data-testid="stat-resort"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="relative p-2 rounded-lg" style={{ backgroundColor: 'rgba(0, 180, 216, 0.1)' }}>
-                      {/* Mini Progress Ring */}
-                      <svg className="w-5 h-5 -rotate-90" viewBox="0 0 20 20">
-                        <circle cx="10" cy="10" r="8" fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="2" />
-                        <circle 
-                          cx="10" cy="10" r="8" fill="none" 
-                          stroke="#00B4D8" strokeWidth="2" 
-                          strokeDasharray={`${stats.completionPercent * 0.5} 50`}
-                          strokeLinecap="round"
-                        />
-                      </svg>
-                      <Mountain size={10} className="absolute inset-0 m-auto" style={{ color: '#00B4D8' }} />
-                    </div>
-                    <div className="flex-1">
-                      <div className="text-lg font-bold text-white" style={{ fontFamily: 'JetBrains Mono, monospace' }}>
-                        {stats.completionPercent}%
-                        <span className="text-xs ml-2" style={{ color: 'rgba(255,255,255,0.4)' }}>
-                          ({stats.completedRuns}/{stats.totalRuns})
-                        </span>
-                      </div>
-                      <div className="text-xs" style={{ color: 'rgba(255,255,255,0.6)', fontFamily: 'Manrope, sans-serif' }}>
-                        Mountain Progress
-                      </div>
-                    </div>
-                  </div>
-                </GlassCard>
-              </div>
-            </div>
+            <StatsSection 
+              profile={profile} 
+              selectedResort={selectedResort} 
+              showSnowStake={true}
+            />
           </div>
 
           {/* Trail Map Section */}
