@@ -70,10 +70,10 @@ export default function Login() {
 
         <GlassCard className="p-8">
           <h1 className="text-3xl font-bold mb-2 text-white text-center" style={{ fontFamily: 'Manrope, sans-serif' }}>
-            Welcome Back
+            Back for more laps?
           </h1>
           <p className="text-sm mb-6 text-center" style={{ color: 'rgba(255,255,255,0.6)' }}>
-            Ready to track your season?
+            Your mountain. Your laps. Your legacy.
           </p>
 
           {/* Persistent Message Banner */}
