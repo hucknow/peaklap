@@ -227,6 +227,9 @@ export default function LogRun() {
     return userLogs.filter(log => log.run_id === runId).length;
   }, [userLogs]);
 
+  // Get username for page title
+  const userName = profile?.username || 'Rider';
+
   return (
     <div className="min-h-screen pb-24" style={{ backgroundColor: '#12181B' }} data-testid="log-run-page">
       {/* Header with global resort selector */}
@@ -241,10 +244,10 @@ export default function LogRun() {
       />
       
       <div className="p-6">
-        {/* Page Title with GPS detection */}
+        {/* Page Title */}
         <div className="flex items-center justify-between mb-4">
-          <h1 className="text-2xl font-bold text-white" style={{ fontFamily: 'Manrope, sans-serif' }}>
-            Log a Run
+          <h1 className="text-xl font-bold text-white" style={{ fontFamily: 'Manrope, sans-serif' }}>
+            <span style={{ color: '#00B4D8' }}>{userName}</span> — Hucked it, now log it. 🏆
           </h1>
           
           {/* GPS Detected Banner */}

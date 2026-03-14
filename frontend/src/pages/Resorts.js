@@ -309,11 +309,19 @@ export default function Resorts() {
     );
   };
 
+  // Get username for page title
+  const userName = profile?.username || 'Rider';
+
   return (
     <div className="min-h-screen pb-24" style={{ backgroundColor: '#12181B' }}>
       <Header />
       
       <div className="px-6 pt-4">
+        {/* Page Title */}
+        <h1 className="text-xl font-bold text-white mb-4" style={{ fontFamily: 'Manrope, sans-serif' }}>
+          <span style={{ color: '#00B4D8' }}>{userName}</span> — Every mountain, Every run, All yours. 🏔️
+        </h1>
+
         {selectedResort && (
           <div className="mb-4">
             <GlassCard className="px-4 py-3">

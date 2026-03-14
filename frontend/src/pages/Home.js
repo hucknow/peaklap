@@ -30,22 +30,6 @@ export default function Home() {
   const hasNoGoals = !profile?.season_goal_days && !profile?.season_goal_vertical_ft;
   const hasNoActivity = recentActivity.length === 0 && stats.daysLogged === 0;
 
-  // Dynamic greeting based on time of day
-  const getGreeting = () => {
-    const hour = new Date().getHours();
-    const name = profile?.username || 'rider';
-    
-    if (hour < 12) {
-      return { text: `First chair energy, ${name}!`, emoji: '🌅' };
-    } else if (hour < 17) {
-      return { text: `The mountain is waiting, ${name} — go own it.`, emoji: '⛷️' };
-    } else {
-      return { text: `Après time, ${name}!`, emoji: '🏔️' };
-    }
-  };
-
-  const greeting = getGreeting();
-
   const loadStats = useCallback(async () => {
     if (!profile?.id) return;
     
@@ -255,14 +239,17 @@ export default function Home() {
     </div>
   );
 
+  // Get username for greeting
+  const userName = profile?.username || 'Rider';
+
   return (
     <div className="min-h-screen pb-24" style={{ backgroundColor: '#12181B' }} data-testid="home-page">
       <Header />
       
-      {/* Greeting Header */}
+      {/* Page Title */}
       <div className="p-6 pb-0">
         <h1 className="text-2xl font-bold text-white mb-1" style={{ fontFamily: 'Manrope, sans-serif' }}>
-          {greeting.text} {greeting.emoji}
+          <span style={{ color: '#00B4D8' }}>{userName}</span> — The mountains are waiting, own it. ⛷️
         </h1>
         <button 
           onClick={() => navigate('/history')}

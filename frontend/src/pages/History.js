@@ -457,13 +457,17 @@ export default function History() {
     );
   };
 
+  // Get username for page title
+  const userName = profile?.username || 'Rider';
+
   return (
     <div className="min-h-screen pb-24" style={{ backgroundColor: '#12181B' }} data-testid="history-page">
       <Header />
       
       <div className="p-6">
-        <h1 className="text-2xl font-bold text-white mb-6" style={{ fontFamily: 'Manrope, sans-serif' }}>
-          History
+        {/* Page Title */}
+        <h1 className="text-xl font-bold text-white mb-6" style={{ fontFamily: 'Manrope, sans-serif' }}>
+          <span style={{ color: '#00B4D8' }}>{userName}</span> — Your mountain legacy. 🧭
         </h1>
 
         {/* Stats Section with Toggle (controlled by History page) */}
