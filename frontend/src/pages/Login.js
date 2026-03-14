@@ -63,11 +63,8 @@ export default function Login() {
             <img 
               src={LOGO_URL}
               alt="PeakLap Logo" 
-              className="h-24 w-24 object-contain"
+              className="h-32 w-32 object-contain"
             />
-            <p className="text-center text-xl font-bold mt-2" style={{ color: 'white', fontFamily: 'Manrope, sans-serif' }}>
-              PeakLap
-            </p>
           </Link>
         </div>
 
