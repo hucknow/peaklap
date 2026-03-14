@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { GlassCard } from './GlassCard';
 import { DifficultyBadge } from './DifficultyBadge';
-import { Check, Target, ChevronDown, ChevronRight, TrendingUp, RotateCcw } from 'lucide-react';
+import { Check, Target, ChevronDown, ChevronRight, TrendingUp, RotateCcw, Heart } from 'lucide-react';
 
 // Status colors
 const STATUS_COLORS = {
@@ -27,6 +27,7 @@ export function RunChecklist({
   getTodayCount,
   onLogRun,
   onRunTap,
+  onToggleBucket,
   filter,
   setFilter,
   onLogLastAgain,
@@ -236,6 +237,24 @@ export function RunChecklist({
                             </span>
                           )}
                         </div>
+                      </button>
+
+                      {/* Bucket List Button */}
+                      <button
+                        onClick={() => onToggleBucket && onToggleBucket(run.id)}
+                        className="p-2 rounded-full transition-all hover:scale-110"
+                        style={{
+                          backgroundColor: inBucket ? 'rgba(255, 23, 68, 0.2)' : 'rgba(255,255,255,0.05)',
+                        }}
+                        data-testid={`bucket-run-${run.id}`}
+                      >
+                        <Heart 
+                          size={16} 
+                          fill={inBucket ? '#FF1744' : 'transparent'}
+                          style={{ 
+                            color: inBucket ? '#FF1744' : 'rgba(255,255,255,0.4)'
+                          }} 
+                        />
                       </button>
 
                       {/* Log Button */}

@@ -161,6 +161,58 @@ export default function LogRun() {
     }
   }, [runs, logRun, userId, selectedResort?.id]);
 
+  // Handle detailed log (with date, time, conditions, rating, notes)
+  const handleLogDetailedRun = useCallback(async (runId, details) => {
+    const run = runs.find(r => r.id === runId);
+    
+    if (!userId) {
+      toast.error('Please log in to log runs');
+      return;
+    }
+    
+    if (!selectedResort?.id) {
+      toast.error('Please select a resort first');
+      return;
+    }
+    
+    // Log with custom timestamp and details
+    try {
+      const { error } = await supabase
+        .from('user_logs')
+        .insert({
+          user_id: userId,
+          run_id: runId,
+          ski_area_id: selectedResort.id,
+          logged_at: details.logged_at || new Date().toISOString(),
+          condition: details.condition || null,
+          rating: details.rating || null,
+          notes: details.notes || null
+        });
+      
+      if (error) {
+        toast.error(`Failed to log run: ${error.message}`);
+        return;
+      }
+      
+      toast.success(`Logged: ${run?.name || 'Run'} ✓`, {
+        style: {
+          background: 'rgba(26, 33, 38, 0.95)',
+          backdropFilter: 'blur(12px)',
+          border: '1px solid rgba(255, 255, 255, 0.08)',
+          borderLeft: '3px solid #00E676',
+          borderRadius: '12px',
+          color: 'white',
+          fontFamily: 'Manrope, sans-serif',
+        },
+      });
+      
+      refresh();
+    } catch (err) {
+      console.error('Error logging detailed run:', err);
+      toast.error('Failed to log run');
+    }
+  }, [runs, userId, selectedResort?.id, refresh]);
+
   // Handle log last run again
   const handleLogLastAgain = useCallback(async () => {
     const result = await logLastRunAgain();
@@ -298,6 +350,7 @@ export default function LogRun() {
             getTodayCount={getTodayCount}
             onLogRun={handleLogRun}
             onRunTap={handleRunTap}
+            onToggleBucket={handleToggleBucket}
             filter={filter}
             setFilter={setFilter}
             onLogLastAgain={handleLogLastAgain}
@@ -327,6 +380,7 @@ export default function LogRun() {
         isOpen={showRunDetail}
         onClose={() => setShowRunDetail(false)}
         onLog={handleLogRun}
+        onLogDetailed={handleLogDetailedRun}
         onToggleBucket={handleToggleBucket}
         isInBucket={selectedRun ? isInBucketList(selectedRun.id) : false}
         userLogCount={selectedRun ? getUserLogCount(selectedRun.id) : 0}
