@@ -177,7 +177,7 @@ export function StatsSection({ profile, selectedResort, showSnowStake = true }) 
                   <span className="text-xs ml-1" style={{ color: 'rgba(255,255,255,0.5)' }}>ft</span>
                 </div>
                 <div className="text-xs" style={{ color: 'rgba(255,255,255,0.8)', fontFamily: 'Manrope, sans-serif' }}>
-                  Vert Skied
+                  Vertical Skied
                 </div>
               </div>
             </div>
