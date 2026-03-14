@@ -1,0 +1,193 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Alpine Dark Mode Color System */
+  --color-bg-primary: #12181B;
+  --color-bg-secondary: #1A2126;
+  --color-accent: #00B4D8;
+  --color-accent-dark: #0077B6;
+  --color-accent-light: #48CAE4;
+  --color-success: #00E676;
+  --color-warning: #FFD700;
+  --color-danger: #FF1744;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Manrope', system-ui, -apple-system, sans-serif;
+  background-color: var(--color-bg-primary);
+  color: white;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Subtle topographic/snow grain texture overlay */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+}
+
+/* Topographic contour lines (very subtle) */
+body::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.015;
+  background-image: 
+    repeating-radial-gradient(
+      circle at 50% 50%,
+      transparent 0,
+      transparent 40px,
+      rgba(255, 255, 255, 0.5) 40px,
+      rgba(255, 255, 255, 0.5) 41px
+    ),
+    repeating-radial-gradient(
+      circle at 80% 20%,
+      transparent 0,
+      transparent 60px,
+      rgba(255, 255, 255, 0.3) 60px,
+      rgba(255, 255, 255, 0.3) 61px
+    );
+}
+
+/* Ensure content is above texture */
+#root {
+  position: relative;
+  z-index: 1;
+}
+
+/* Remove default input styles */
+input,
+textarea,
+select {
+  font-family: inherit;
+}
+
+/* Custom scrollbar for dark theme */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 180, 216, 0.3);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 180, 216, 0.5);
+}
+
+/* Focus ring color - updated to powder blue */
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(0, 180, 216, 0.5);
+}
+
+/* Date and time input styling for dark mode */
+input[type="date"],
+input[type="time"] {
+  color-scheme: dark;
+}
+
+/* Pulse animation for Snow Stake goal crushed */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* Glow animation */
+@keyframes glow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(0, 180, 216, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(0, 180, 216, 0.5);
+  }
+}
+
+/* Shimmer animation for Snow Stake */
+@keyframes shimmer {
+  0%, 100% {
+    opacity: 0.3;
+    transform: translateY(0);
+  }
+  50% {
+    opacity: 0.6;
+    transform: translateY(-10px);
+  }
+}
+
+/* Float animation for decorative elements */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+/* Smooth transitions for interactive elements */
+button,
+a {
+  transition: opacity 0.2s ease, transform 0.2s ease, background-color 0.2s ease;
+}
+
+button:active,
+a:active {
+  transform: scale(0.98);
+}
+
+/* Ensure no white flash on page load */
+html {
+  background-color: #12181B;
+}
+
+/* Glass card hover effect */
+.glass-hover {
+  transition: all 0.3s ease;
+}
+
+.glass-hover:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+  transform: translateY(-2px);
+}
+
+/* Updated toast styles for powder blue accent */
+[data-sonner-toast] {
+  --normal-bg: rgba(26, 33, 38, 0.95) !important;
+  --normal-border: 1px solid rgba(255, 255, 255, 0.08) !important;
+}

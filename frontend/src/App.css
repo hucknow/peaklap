@@ -1,0 +1,11 @@
+/* App specific styles */
+
+.App {
+  min-height: 100vh;
+  background-color: #12181B;
+}
+
+/* Override any default centering */
+.App {
+  text-align: left;
+}
