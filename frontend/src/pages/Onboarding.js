@@ -171,7 +171,7 @@ export default function Onboarding() {
                     Difficulty Preference
                   </label>
                   <div className="flex flex-wrap gap-2">
-                    {['novice', 'easy', 'intermediate', 'advanced', 'expert'].map((diff) => (
+                    {['novice', 'intermediate', 'advanced', 'expert'].map((diff) => (
                       <button
                         key={diff}
                         data-testid={`difficulty-${diff}`}
@@ -192,9 +192,8 @@ export default function Onboarding() {
                     {[
                       { value: 'groomers', label: 'Groomers' },
                       { value: 'trees', label: 'Trees' },
-                      { value: 'powder', label: 'Powder' },
+                      { value: 'off-piste', label: 'Off-Piste/Bowls' },
                       { value: 'park', label: 'Park' },
-                      { value: 'backcountry', label: 'Backcountry' },
                     ].map((terrain) => (
                       <button
                         key={terrain.value}
@@ -293,6 +292,9 @@ export default function Onboarding() {
                       fontFamily: 'JetBrains Mono, monospace'
                     }}
                   />
+                  <p className="text-xs mt-2" style={{ color: 'rgba(255,255,255,0.5)' }}>
+                    Suggested: {goalDays * 8000} ft ({goalDays} days × 8,000 ft/day)
+                  </p>
                 </div>
 
                 {runs.length > 0 && (
