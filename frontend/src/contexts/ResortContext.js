@@ -28,6 +28,7 @@ export function ResortProvider({ children }) {
   const userResortsLoadedRef = useRef(false);
   const initializingRef = useRef(false);
   const gpsDetectionAttemptedRef = useRef(false);
+  const profileResortSetRef = useRef(false);
 
   // Load all resorts from Supabase - ONLY ONCE
   const loadResorts = useCallback(async (force = false) => {
@@ -210,8 +211,10 @@ export function ResortProvider({ children }) {
       if (profile?.current_resort_id && resorts.length > 0) {
         restoredResort = resorts.find(r => r.id === profile.current_resort_id);
         if (restoredResort) {
+          console.log('Init: Setting resort from current_resort_id:', restoredResort.name);
           setSelectedResortState(restoredResort);
           offlineStorage.setLastResort(restoredResort.id);
+          profileResortSetRef.current = true;
         }
       }
 
@@ -219,8 +222,10 @@ export function ResortProvider({ children }) {
       if (!restoredResort && profile?.primary_resort_id && resorts.length > 0) {
         restoredResort = resorts.find(r => r.id === profile.primary_resort_id);
         if (restoredResort) {
+          console.log('Init: Setting resort from primary_resort_id:', restoredResort.name);
           setSelectedResortState(restoredResort);
           offlineStorage.setLastResort(restoredResort.id);
+          profileResortSetRef.current = true;
         }
         // Also set primary resort state
         setPrimaryResort(restoredResort);
@@ -232,6 +237,7 @@ export function ResortProvider({ children }) {
         if (lastResortId && resorts.length > 0) {
           restoredResort = resorts.find(r => r.id === lastResortId);
           if (restoredResort) {
+            console.log('Init: Setting resort from localStorage:', restoredResort.name);
             setSelectedResortState(restoredResort);
           }
         }
@@ -241,6 +247,7 @@ export function ResortProvider({ children }) {
       if (!restoredResort && profile?.home_resort_id && resorts.length > 0) {
         restoredResort = resorts.find(r => r.id === profile.home_resort_id);
         if (restoredResort) {
+          console.log('Init: Setting resort from home_resort_id:', restoredResort.name);
           setSelectedResortState(restoredResort);
           offlineStorage.setLastResort(restoredResort.id);
         }
@@ -248,6 +255,7 @@ export function ResortProvider({ children }) {
 
       // 5. If still no resort and we have resorts, select the first one
       if (!restoredResort && resorts.length > 0) {
+        console.log('Init: Falling back to first resort:', resorts[0].name);
         setSelectedResortState(resorts[0]);
         offlineStorage.setLastResort(resorts[0].id);
       }
@@ -280,10 +288,44 @@ export function ResortProvider({ children }) {
     }
   }, [profile?.primary_resort_id, allResorts]);
 
+  // CRITICAL: Update selected resort when profile loads with current_resort_id or primary_resort_id
+  // This handles the case where profile loads AFTER initial mount
+  useEffect(() => {
+    // Skip if already set from profile or no data available
+    if (profileResortSetRef.current || !profile || allResorts.length === 0) return;
+    
+    // Priority 1: current_resort_id
+    if (profile.current_resort_id) {
+      const currentResort = allResorts.find(r => r.id === profile.current_resort_id);
+      if (currentResort) {
+        console.log('Setting resort from current_resort_id:', currentResort.name);
+        setSelectedResortState(currentResort);
+        offlineStorage.setLastResort(currentResort.id);
+        profileResortSetRef.current = true;
+        return;
+      }
+    }
+    
+    // Priority 2: primary_resort_id
+    if (profile.primary_resort_id) {
+      const primaryResortData = allResorts.find(r => r.id === profile.primary_resort_id);
+      if (primaryResortData) {
+        console.log('Setting resort from primary_resort_id:', primaryResortData.name);
+        setSelectedResortState(primaryResortData);
+        offlineStorage.setLastResort(primaryResortData.id);
+        profileResortSetRef.current = true;
+        return;
+      }
+    }
+  }, [profile, allResorts]);
+
   // Load user resorts when userId changes (separate from initialization)
   useEffect(() => {
     if (userId) {
       loadUserResorts();
+    } else {
+      // Reset refs when user logs out
+      profileResortSetRef.current = false;
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]); // Only depend on userId primitive
