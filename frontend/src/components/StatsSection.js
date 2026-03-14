@@ -6,9 +6,20 @@ import { supabase } from '@/lib/supabase';
 import { MapPin, TrendingUp, Mountain } from 'lucide-react';
 import { format, startOfDay, endOfDay } from 'date-fns';
 
-export function StatsSection({ profile, selectedResort, showSnowStake = true }) {
+export function StatsSection({ profile, selectedResort, showSnowStake = true, period: controlledPeriod, onPeriodChange }) {
   const navigate = useNavigate();
-  const [period, setPeriod] = useState('season'); // 'today', 'season', 'lifetime'
+  // Use controlled period if provided, otherwise use internal state
+  const [internalPeriod, setInternalPeriod] = useState('season');
+  const period = controlledPeriod !== undefined ? controlledPeriod : internalPeriod;
+  
+  const handlePeriodChange = (newPeriod) => {
+    if (onPeriodChange) {
+      onPeriodChange(newPeriod);
+    } else {
+      setInternalPeriod(newPeriod);
+    }
+  };
+  
   const [stats, setStats] = useState({ 
     daysLogged: 0, 
     verticalLogged: 0, 
@@ -105,7 +116,7 @@ export function StatsSection({ profile, selectedResort, showSnowStake = true }) 
           {['today', 'season', 'lifetime'].map((p) => (
             <button
               key={p}
-              onClick={() => setPeriod(p)}
+              onClick={() => handlePeriodChange(p)}
               className="px-4 py-1.5 rounded-full text-sm font-medium transition-all"
               style={{
                 backgroundColor: period === p ? '#00B4D8' : 'transparent',
