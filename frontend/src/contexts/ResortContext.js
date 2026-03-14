@@ -13,6 +13,7 @@ export function ResortProvider({ children }) {
 
   // Core state
   const [selectedResort, setSelectedResortState] = useState(null);
+  const [primaryResort, setPrimaryResort] = useState(null);
   const [detectedResort, setDetectedResort] = useState(null);
   const [isDetecting, setIsDetecting] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -163,7 +164,8 @@ export function ResortProvider({ children }) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [detectResortByGPS]);
 
-  // Set selected resort with persistence to localStorage AND Supabase
+  // Set selected resort (current_resort_id) with persistence to localStorage AND Supabase
+  // This is the "current" resort - where user is skiing right now
   const setSelectedResort = useCallback(async (resort) => {
     setSelectedResortState(resort);
 
@@ -171,25 +173,26 @@ export function ResortProvider({ children }) {
       // Persist to localStorage immediately
       offlineStorage.setLastResort(resort.id);
 
-      // Persist to Supabase profiles.home_resort_id
+      // Persist to Supabase profiles.current_resort_id
       if (userId && checkOnlineStatus()) {
         try {
           const { error } = await supabase
             .from('profiles')
-            .update({ home_resort_id: resort.id })
+            .update({ current_resort_id: resort.id })
             .eq('id', userId);
 
           if (error) {
-            console.error('Error saving home_resort_id:', error);
+            console.error('Error saving current_resort_id:', error);
           }
         } catch (err) {
-          console.error('Error persisting resort to profile:', err);
+          console.error('Error persisting current resort to profile:', err);
         }
       }
     }
   }, [userId]);
 
   // Initialize: load resorts, then restore selection - RUNS ONCE
+  // Priority: current_resort_id > primary_resort_id > localStorage > first resort
   useEffect(() => {
     // Prevent multiple initializations
     if (initializingRef.current) return;
@@ -200,32 +203,61 @@ export function ResortProvider({ children }) {
 
       // Load all resorts first
       const resorts = await loadResorts();
-
-      // Try to restore from localStorage first (instant)
-      const lastResortId = offlineStorage.getLastResort();
+      
       let restoredResort = null;
 
-      if (lastResortId && resorts.length > 0) {
-        restoredResort = resorts.find(r => r.id === lastResortId);
+      // 1. Try to restore from profile.current_resort_id (where user is currently skiing)
+      if (profile?.current_resort_id && resorts.length > 0) {
+        restoredResort = resorts.find(r => r.id === profile.current_resort_id);
         if (restoredResort) {
           setSelectedResortState(restoredResort);
-        }
-      }
-
-      // If no localStorage, try profile.home_resort_id
-      if (!restoredResort && profile?.home_resort_id && resorts.length > 0) {
-        restoredResort = resorts.find(r => r.id === profile.home_resort_id);
-        if (restoredResort) {
-          setSelectedResortState(restoredResort);
-          // Sync to localStorage
           offlineStorage.setLastResort(restoredResort.id);
         }
       }
 
-      // If still no resort and we have resorts, select the first one
+      // 2. If no current resort, fall back to profile.primary_resort_id (home mountain)
+      if (!restoredResort && profile?.primary_resort_id && resorts.length > 0) {
+        restoredResort = resorts.find(r => r.id === profile.primary_resort_id);
+        if (restoredResort) {
+          setSelectedResortState(restoredResort);
+          offlineStorage.setLastResort(restoredResort.id);
+        }
+        // Also set primary resort state
+        setPrimaryResort(restoredResort);
+      }
+
+      // 3. If still nothing, try localStorage (for offline support)
+      if (!restoredResort) {
+        const lastResortId = offlineStorage.getLastResort();
+        if (lastResortId && resorts.length > 0) {
+          restoredResort = resorts.find(r => r.id === lastResortId);
+          if (restoredResort) {
+            setSelectedResortState(restoredResort);
+          }
+        }
+      }
+
+      // 4. Legacy fallback: try home_resort_id (old field)
+      if (!restoredResort && profile?.home_resort_id && resorts.length > 0) {
+        restoredResort = resorts.find(r => r.id === profile.home_resort_id);
+        if (restoredResort) {
+          setSelectedResortState(restoredResort);
+          offlineStorage.setLastResort(restoredResort.id);
+        }
+      }
+
+      // 5. If still no resort and we have resorts, select the first one
       if (!restoredResort && resorts.length > 0) {
         setSelectedResortState(resorts[0]);
         offlineStorage.setLastResort(resorts[0].id);
+      }
+
+      // Load primary resort separately for display purposes
+      if (profile?.primary_resort_id && resorts.length > 0) {
+        const primary = resorts.find(r => r.id === profile.primary_resort_id);
+        if (primary) {
+          setPrimaryResort(primary);
+        }
       }
 
       setLoading(false);
@@ -238,6 +270,16 @@ export function ResortProvider({ children }) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Empty dependency array - run ONCE on mount
 
+  // Update primary resort when profile changes
+  useEffect(() => {
+    if (profile?.primary_resort_id && allResorts.length > 0) {
+      const primary = allResorts.find(r => r.id === profile.primary_resort_id);
+      if (primary) {
+        setPrimaryResort(primary);
+      }
+    }
+  }, [profile?.primary_resort_id, allResorts]);
+
   // Load user resorts when userId changes (separate from initialization)
   useEffect(() => {
     if (userId) {
@@ -246,11 +288,39 @@ export function ResortProvider({ children }) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]); // Only depend on userId primitive
 
+  // Clear current resort (reset to primary)
+  const clearCurrentResort = useCallback(async () => {
+    if (primaryResort) {
+      setSelectedResortState(primaryResort);
+      offlineStorage.setLastResort(primaryResort.id);
+      
+      // Clear current_resort_id in database
+      if (userId && checkOnlineStatus()) {
+        try {
+          const { error } = await supabase
+            .from('profiles')
+            .update({ current_resort_id: null })
+            .eq('id', userId);
+
+          if (error) {
+            console.error('Error clearing current_resort_id:', error);
+          }
+        } catch (err) {
+          console.error('Error clearing current resort:', err);
+        }
+      }
+    }
+  }, [primaryResort, userId]);
+
+  // Check if user is at a different resort than their primary
+  const isAtDifferentResort = selectedResort?.id && primaryResort?.id && selectedResort.id !== primaryResort.id;
+
   return (
     <ResortContext.Provider value={{
       // Core state
-      selectedResort,
-      setSelectedResort,
+      selectedResort,        // Current resort (where user is skiing now)
+      setSelectedResort,     // Set current resort
+      primaryResort,         // Home mountain (user's preference)
       loading,
 
       // GPS detection
@@ -262,6 +332,10 @@ export function ResortProvider({ children }) {
       allResorts,
       recentResorts,
       myResorts,
+
+      // Utility
+      isAtDifferentResort,   // True if user is at a different resort than primary
+      clearCurrentResort,    // Reset to primary resort
 
       // Refresh functions
       loadResorts,

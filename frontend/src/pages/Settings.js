@@ -35,7 +35,7 @@ const TERRAIN_AREA_OPTIONS = [
 
 export default function Settings() {
   const { profile, updateProfile, signOut } = useAuth();
-  const { selectedResort, setSelectedResort } = useResort();
+  const { selectedResort, setSelectedResort, primaryResort: contextPrimaryResort, clearCurrentResort } = useResort();
   const navigate = useNavigate();
   
   // Profile state
@@ -91,12 +91,20 @@ export default function Settings() {
         setTerrainAreas(profile.terrain_areas.split(',').map(s => s.trim()));
       }
       
-      // Load primary resort
-      if (profile.primary_resort_id) {
+      // Load primary resort from profile if not already loaded from context
+      if (profile.primary_resort_id && !primaryResort) {
         loadPrimaryResort(profile.primary_resort_id);
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profile]);
+
+  // Sync primary resort from context
+  useEffect(() => {
+    if (contextPrimaryResort && !primaryResort) {
+      setPrimaryResort(contextPrimaryResort);
+    }
+  }, [contextPrimaryResort, primaryResort]);
 
   // Auto-calculate vertical goal based on days
   useEffect(() => {
@@ -371,22 +379,51 @@ export default function Settings() {
 
           {/* Where do you ride (Primary Resort) */}
           <GlassCard className="p-6">
-            <h2 className="text-lg font-bold text-white mb-4" style={{ fontFamily: 'Manrope, sans-serif' }}>
+            <h2 className="text-lg font-bold text-white mb-2" style={{ fontFamily: 'Manrope, sans-serif' }}>
               Where do you ride?
             </h2>
-            <button
-              onClick={() => { loadResorts(); setShowResortPicker(true); }}
-              className="w-full p-4 rounded-xl flex items-center justify-between transition-all hover:bg-white/5"
-              style={{ backgroundColor: '#1A2126', border: '1px solid rgba(255,255,255,0.1)' }}
-            >
-              <div className="flex items-center gap-3">
-                <Mountain size={20} style={{ color: '#00B4D8' }} />
-                <span className="text-white" style={{ fontFamily: 'Manrope, sans-serif' }}>
-                  {primaryResort ? primaryResort.name : 'Select your primary resort'}
-                </span>
+            <p className="text-xs mb-4" style={{ color: 'rgba(255,255,255,0.5)' }}>
+              Your home mountain. When you open the app, it defaults here unless you're at another resort.
+            </p>
+            
+            {/* Primary Resort (Home Mountain) */}
+            <div className="mb-3">
+              <label className="block text-xs font-medium mb-2" style={{ color: 'rgba(255,255,255,0.6)' }}>
+                Home Mountain
+              </label>
+              <button
+                onClick={() => { loadResorts(); setShowResortPicker(true); }}
+                className="w-full p-4 rounded-xl flex items-center justify-between transition-all hover:bg-white/5"
+                style={{ backgroundColor: '#1A2126', border: '1px solid rgba(255,255,255,0.1)' }}
+              >
+                <div className="flex items-center gap-3">
+                  <Mountain size={20} style={{ color: '#00B4D8' }} />
+                  <span className="text-white" style={{ fontFamily: 'Manrope, sans-serif' }}>
+                    {primaryResort ? primaryResort.name : 'Select your home mountain'}
+                  </span>
+                </div>
+                <ChevronRight size={20} style={{ color: 'rgba(255,255,255,0.5)' }} />
+              </button>
+            </div>
+
+            {/* Current Resort (if different from primary) */}
+            {selectedResort && primaryResort && selectedResort.id !== primaryResort.id && (
+              <div className="p-3 rounded-xl" style={{ backgroundColor: 'rgba(255, 152, 0, 0.1)', border: '1px solid rgba(255, 152, 0, 0.3)' }}>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs" style={{ color: 'rgba(255, 152, 0, 0.9)' }}>Currently at:</span>
+                    <span className="text-sm font-medium text-white">{selectedResort.name}</span>
+                  </div>
+                  <button
+                    onClick={clearCurrentResort}
+                    className="text-xs px-2 py-1 rounded-full"
+                    style={{ backgroundColor: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.7)' }}
+                  >
+                    Reset to home
+                  </button>
+                </div>
               </div>
-              <ChevronRight size={20} style={{ color: 'rgba(255,255,255,0.5)' }} />
-            </button>
+            )}
           </GlassCard>
 
           {/* What's your level - Difficulty */}
