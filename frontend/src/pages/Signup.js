@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { GlassCard } from '@/components/GlassCard';
-import { Eye, EyeOff, CheckCircle, AlertCircle, Mail } from 'lucide-react';
+import { Eye, EyeOff, CheckCircle, AlertCircle, Mail, Coffee } from 'lucide-react';
 
 // Consistent logo URL used across the app
 const LOGO_URL = 'https://customer-assets.emergentagent.com/job_code-review-preview/artifacts/18r8cfx3_PeakLap_Logo_dark.png';
@@ -54,11 +54,8 @@ export default function Signup() {
             <img 
               src={LOGO_URL}
               alt="PeakLap Logo" 
-              className="h-24 w-24 object-contain"
+              className="h-32 w-32 object-contain"
             />
-            <p className="text-center text-xl font-bold mt-2" style={{ color: 'white', fontFamily: 'Manrope, sans-serif' }}>
-              PeakLap
-            </p>
           </Link>
         </div>
 
@@ -194,6 +191,20 @@ export default function Signup() {
                 Sign in
               </Link>
             </p>
+          </div>
+
+          {/* Support PeakLap Link */}
+          <div className="mt-4 text-center">
+            <a
+              href="https://buymeacoffee.com/peaklap"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 text-sm transition-opacity hover:opacity-80"
+              style={{ color: 'rgba(255,255,255,0.5)', textDecoration: 'none' }}
+            >
+              <Coffee size={16} style={{ color: '#FFDD57' }} />
+              <span>Support PeakLap</span>
+            </a>
           </div>
         </GlassCard>
       </div>
