@@ -1,17 +1,19 @@
 import localforage from 'localforage';
+import { isNative, getNetworkStatus as getCapacitorNetworkStatus } from './platform';
 
-// Initialize localForage stores
-const runsStore = localforage.createInstance({ name: 'sendit', storeName: 'runs' });
-const liftsStore = localforage.createInstance({ name: 'sendit', storeName: 'lifts' });
-const logsStore = localforage.createInstance({ name: 'sendit', storeName: 'logs' });
-const bucketStore = localforage.createInstance({ name: 'sendit', storeName: 'bucket' });
-const syncQueue = localforage.createInstance({ name: 'sendit', storeName: 'syncQueue' });
-const resortStore = localforage.createInstance({ name: 'sendit', storeName: 'resorts' });
+// Initialize localForage stores - renamed to peaklap
+const runsStore = localforage.createInstance({ name: 'peaklap', storeName: 'runs' });
+const liftsStore = localforage.createInstance({ name: 'peaklap', storeName: 'lifts' });
+const logsStore = localforage.createInstance({ name: 'peaklap', storeName: 'logs' });
+const bucketStore = localforage.createInstance({ name: 'peaklap', storeName: 'bucket' });
+const syncQueue = localforage.createInstance({ name: 'peaklap', storeName: 'syncQueue' });
+const resortStore = localforage.createInstance({ name: 'peaklap', storeName: 'resorts' });
+const profileStore = localforage.createInstance({ name: 'peaklap', storeName: 'profile' });
 
 // Storage keys
-const LAST_RESORT_KEY = 'sendit_last_resort_id';
-const VIEW_PREFERENCE_KEY = 'sendit_view_preference';
-const LAST_SYNC_KEY = 'sendit_last_sync';
+const LAST_RESORT_KEY = 'peaklap_last_resort_id';
+const VIEW_PREFERENCE_KEY = 'peaklap_view_preference';
+const LAST_SYNC_KEY = 'peaklap_last_sync';
 
 // Generate session ID for a given date
 export const generateSessionId = (userId, date = new Date()) => {
@@ -144,12 +146,40 @@ export const offlineStorage = {
     await logsStore.clear();
     await bucketStore.clear();
     await resortStore.clear();
+    await profileStore.clear();
+  },
+  
+  // Profile caching for offline
+  async cacheProfile(profile) {
+    await profileStore.setItem('current_profile', profile);
+  },
+  
+  async getCachedProfile() {
+    return await profileStore.getItem('current_profile');
+  },
+  
+  // Get last sync time
+  async getLastSync() {
+    return await logsStore.getItem(LAST_SYNC_KEY);
   }
 };
 
-// Online status hook helper
+// Online status hook helper - uses Capacitor on native, navigator.onLine on web
 export const checkOnlineStatus = () => {
+  // For synchronous checks, use navigator.onLine (works everywhere)
   return navigator.onLine;
+};
+
+// Async online check that uses Capacitor Network plugin on native
+export const checkOnlineStatusAsync = async () => {
+  try {
+    if (isNative()) {
+      return await getCapacitorNetworkStatus();
+    }
+    return navigator.onLine;
+  } catch {
+    return navigator.onLine;
+  }
 };
 
 // GPS location helper

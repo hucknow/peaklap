@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
 import { detectRegion } from '@/lib/difficulty-system';
+import { offlineStorage } from '@/lib/offline';
 
 const AuthContext = createContext({});
 
@@ -74,9 +75,39 @@ export function AuthProvider({ children }) {
 
         if (!createError) {
           setProfile(created);
+          // Cache profile for offline
+          await offlineStorage.cacheProfile(created);
         }
       } else if (data) {
         setProfile(data);
+        // Cache profile for offline
+        await offlineStorage.cacheProfile(data);
+        
+        // Cache resorts for offline resort selector
+        try {
+          const { data: resorts } = await supabase
+            .from('ski_areas')
+            .select('id, name, country, region, map_url')
+            .order('name');
+          if (resorts) {
+            await offlineStorage.cacheResorts(resorts);
+          }
+        } catch (resortErr) {
+          console.log('Could not cache resorts:', resortErr);
+        }
+        
+        // Cache user bucket list for offline
+        try {
+          const { data: bucket } = await supabase
+            .from('bucket_list')
+            .select('*')
+            .eq('user_id', userId);
+          if (bucket) {
+            await offlineStorage.cacheBucketList(userId, bucket);
+          }
+        } catch (bucketErr) {
+          console.log('Could not cache bucket list:', bucketErr);
+        }
       }
     } catch (error) {
       console.error('Error loading profile:', error);

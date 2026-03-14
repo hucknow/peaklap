@@ -103,11 +103,86 @@
 #====================================================================================================
 
 user_problem_statement: |
-  Fix the error "Failed to log run: TypeError: Failed to execute 'text' on 'Response': body stream already read"
-  in the Log Run page and any associated service/helper functions. Ensure all Supabase calls use
-  proper { data, error } destructuring pattern and never call .json(), .text(), or read response.body manually.
+  Add Capacitor for Android builds and implement offline run logging. The web app must continue working exactly as before — Capacitor is additive only.
+  
+  PART 1 — Capacitor Installation & Config
+  PART 2 — Platform Detection Utility  
+  PART 3 — Offline Mode enhancements
+  PART 4-8 — Integration updates for App.js, AuthContext.js, index.css
 
 frontend:
+  - task: "Capacitor installation and configuration"
+    implemented: true
+    working: "NA"
+    file: "frontend/capacitor.config.ts, frontend/package.json"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Installed @capacitor/core, cli, android, network, geolocation, camera, splash-screen, status-bar, app, haptics (v6 for Node 20 compatibility). Created capacitor.config.ts with PeakLap branding. Added build:android, sync:android, open:android scripts to package.json."
+
+  - task: "Platform detection utility (platform.js)"
+    implemented: true
+    working: "NA"
+    file: "frontend/src/lib/platform.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Created platform.js with isNative, isAndroid, isWeb detection. Added getNetworkStatus (uses Capacitor Network on native, navigator.onLine on web). Added addNetworkListener for cross-platform network changes. Added hapticSuccess, hapticLight, hapticError for native haptics. Added setStatusBarStyle, hideSplashScreen, setupBackButton for Android."
+
+  - task: "Offline storage enhancements"
+    implemented: true
+    working: "NA"
+    file: "frontend/src/lib/offline.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Updated offline.js to use peaklap namespace. Added profile caching (cacheProfile, getCachedProfile). Added checkOnlineStatusAsync that uses Capacitor Network on native. Added getLastSync function."
+
+  - task: "Cache data on login (AuthContext)"
+    implemented: true
+    working: "NA"
+    file: "frontend/src/contexts/AuthContext.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Updated AuthContext to cache profile, resorts, and bucket list on successful login using offlineStorage functions."
+
+  - task: "App-level offline sync and Android back button"
+    implemented: true
+    working: "NA"
+    file: "frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added useEffect in AppRoutes to initialize native platform features (status bar, splash screen). Added setupBackButton for Android. Added network listener for auto-sync when coming back online. Wrapped app in div.app-root for safe area insets."
+
+  - task: "Android UI polish (CSS)"
+    implemented: true
+    working: "NA"
+    file: "frontend/src/index.css"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added .app-root with safe area insets (env(safe-area-inset-*)). Added tap highlight removal. Added user-select none for UI elements. Added overscroll-behavior-y contain. Added touch-action manipulation. Added hardware acceleration for smoother animations."
+
   - task: "Fix Supabase response handling in logRun function"
     implemented: true
     working: true
@@ -309,3 +384,42 @@ agent_communication:
       - Supabase returns 400 errors for auth requests
       - New account creation blocked by email validation
       However, code review confirms Settings page implementation is correct.
+  
+  - agent: "main"
+    message: |
+      CAPACITOR INTEGRATION COMPLETE - Android Build Support Added
+      
+      ✅ PACKAGES INSTALLED (Capacitor v6 for Node 20 compatibility):
+      - @capacitor/core, @capacitor/cli, @capacitor/android
+      - @capacitor/network, @capacitor/geolocation, @capacitor/camera
+      - @capacitor/splash-screen, @capacitor/status-bar
+      - @capacitor/app, @capacitor/haptics
+      
+      ✅ FILES CREATED:
+      1. capacitor.config.ts - Capacitor config with PeakLap branding (#12181B theme)
+      2. src/lib/platform.js - Platform detection (isNative, isAndroid, isWeb)
+         - getNetworkStatus (Capacitor Network on native, navigator.onLine on web)
+         - addNetworkListener (cross-platform network change listener)
+         - hapticSuccess, hapticLight, hapticError (native haptics)
+         - setStatusBarStyle, hideSplashScreen, setupBackButton (Android)
+      
+      ✅ FILES MODIFIED:
+      1. package.json - Added build:android, sync:android, open:android scripts
+      2. src/lib/offline.js - Updated to peaklap namespace, added profile caching
+      3. src/contexts/AuthContext.js - Caches profile, resorts, bucket list on login
+      4. src/App.js - Added offline sync listener, Android back button, safe area wrapper
+      5. src/index.css - Added Android UI polish (safe areas, tap highlight, etc.)
+      
+      ✅ WEB APP VERIFIED:
+      - Frontend compiles successfully (only warnings, no errors)
+      - Login page screenshot confirms app still works correctly
+      - Existing offline functionality preserved
+      
+      📱 ANDROID BUILD COMMANDS (run locally with Android Studio):
+      - yarn build:android - Build and sync to Android
+      - yarn sync:android - Sync changes to Android
+      - yarn open:android - Open in Android Studio
+      
+      Note: Android project folder (android/) is not created here as it requires
+      Android Studio SDK which is not available in this environment. Run
+      "npx cap add android" locally to create the Android project.

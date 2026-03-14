@@ -1,7 +1,11 @@
+import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 import { ResortProvider } from '@/contexts/ResortContext';
-import { Toaster } from 'sonner';
+import { Toaster, toast } from 'sonner';
+import { supabase } from '@/lib/supabase';
+import { offlineStorage } from '@/lib/offline';
+import { isNative, setupBackButton, addNetworkListener, setStatusBarStyle, hideSplashScreen } from '@/lib/platform';
 import Login from '@/pages/Login';
 import Signup from '@/pages/Signup';
 import Onboarding from '@/pages/Onboarding';
@@ -66,6 +70,65 @@ function PublicRoute({ children }) {
 function AppRoutes() {
   const { user, loading } = useAuth();
 
+  // Initialize native platform features and offline sync
+  useEffect(() => {
+    // Initialize status bar styling on native
+    if (isNative()) {
+      setStatusBarStyle('dark');
+      hideSplashScreen();
+    }
+
+    // Setup Android back button handler
+    const backButtonListener = setupBackButton();
+
+    // Initialize offline sync listener - sync when coming back online
+    const networkListener = addNetworkListener(async (isConnected) => {
+      if (isConnected) {
+        try {
+          const queue = await offlineStorage.getSyncQueue();
+          if (queue.length > 0) {
+            // Batch sync all queued logs
+            const { error } = await supabase
+              .from('user_logs')
+              .insert(queue.map(item => ({
+                user_id: item.user_id,
+                run_id: item.run_id,
+                ski_area_id: item.ski_area_id,
+                logged_at: item.logged_at,
+                session_id: item.session_id
+              })));
+
+            if (!error) {
+              await offlineStorage.clearSyncQueue();
+              toast.success(
+                `${queue.length} run${queue.length > 1 ? 's' : ''} synced ✓`,
+                { 
+                  description: 'Your offline logs are saved',
+                  style: {
+                    background: 'rgba(26, 33, 38, 0.95)',
+                    backdropFilter: 'blur(12px)',
+                    border: '1px solid rgba(255, 255, 255, 0.08)',
+                    borderLeft: '3px solid #00E676',
+                    borderRadius: '12px',
+                    color: 'white',
+                    fontFamily: 'Manrope, sans-serif',
+                  }
+                }
+              );
+            }
+          }
+        } catch (err) {
+          console.error('Auto-sync error:', err);
+        }
+      }
+    });
+
+    return () => {
+      backButtonListener?.remove();
+      networkListener?.remove();
+    };
+  }, []);
+
   if (loading) {
     return <LoadingScreen />;
   }
@@ -96,27 +159,29 @@ function AppRoutes() {
 
 function App() {
   return (
-    <AuthProvider>
-      <ResortProvider>
-        <BrowserRouter>
-          <AppRoutes />
-          <Toaster 
-            position="top-center"
-            toastOptions={{
-              style: {
-                background: 'rgba(255, 255, 255, 0.05)',
-                backdropFilter: 'blur(12px)',
-                border: '1px solid rgba(255, 255, 255, 0.08)',
-                borderLeft: '3px solid #00E676',
-                borderRadius: '12px',
-                color: 'white',
-                fontFamily: 'Manrope, sans-serif',
-              },
-            }}
-          />
-        </BrowserRouter>
-      </ResortProvider>
-    </AuthProvider>
+    <div className="app-root">
+      <AuthProvider>
+        <ResortProvider>
+          <BrowserRouter>
+            <AppRoutes />
+            <Toaster 
+              position="top-center"
+              toastOptions={{
+                style: {
+                  background: 'rgba(255, 255, 255, 0.05)',
+                  backdropFilter: 'blur(12px)',
+                  border: '1px solid rgba(255, 255, 255, 0.08)',
+                  borderLeft: '3px solid #00E676',
+                  borderRadius: '12px',
+                  color: 'white',
+                  fontFamily: 'Manrope, sans-serif',
+                },
+              }}
+            />
+          </BrowserRouter>
+        </ResortProvider>
+      </AuthProvider>
+    </div>
   );
 }
 
