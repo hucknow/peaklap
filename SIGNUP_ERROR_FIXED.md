@@ -104,7 +104,7 @@ Since signup is working, the next error you might see is:
 ## Testing Signup/Login
 
 ### Test Signup:
-1. Go to: https://run-sesh.preview.emergentagent.com/signup
+1. Go to: https://code-review-preview.preview.emergentagent.com/signup
 2. Enter email and password (min 6 characters)
 3. Click "Create Account"
 4. Should see success message
@@ -112,7 +112,7 @@ Since signup is working, the next error you might see is:
 6. If disabled: Can login immediately
 
 ### Test Login:
-1. Go to: https://run-sesh.preview.emergentagent.com/login
+1. Go to: https://code-review-preview.preview.emergentagent.com/login
 2. Enter your credentials
 3. Click "Sign In"
 4. Should redirect to home page (if onboarding complete) or onboarding

@@ -94,7 +94,7 @@ If you see "Failed to compile" - that's the issue.
 
 ## Verify It's Working
 
-Visit: https://run-sesh.preview.emergentagent.com/login
+Visit: https://code-review-preview.preview.emergentagent.com/login
 
 You should see (in order from top to bottom):
 1. **Sendit logo** (blue location pin with mountain)
