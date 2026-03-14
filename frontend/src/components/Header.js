@@ -14,6 +14,7 @@ export function Header() {
   const { 
     selectedResort, 
     setSelectedResort, 
+    primaryResort,
     allResorts, 
     recentResorts, 
     myResorts, 
@@ -226,11 +227,26 @@ export function Header() {
                     </div>
                   </div>
                 </div>
-                {profile?.sport && (
-                  <div className="text-xs" style={{ color: 'rgba(255, 255, 255, 0.5)' }}>
-                    {profile.sport === 'skier' ? '⛷️ Skier' : profile.sport === 'snowboarder' ? '🏂 Snowboarder' : '♿ Adaptive'}
-                  </div>
-                )}
+                {/* User preferences summary: Sport, Level, Primary Resort */}
+                <div className="text-xs flex flex-wrap items-center gap-1" style={{ color: 'rgba(255, 255, 255, 0.5)' }}>
+                  {profile?.sport && (
+                    <span>
+                      {profile.sport === 'skier' ? '⛷️ Skier' : profile.sport === 'snowboarder' ? '🏂 Snowboarder' : '♿ Adaptive'}
+                    </span>
+                  )}
+                  {profile?.difficulty_preference && (
+                    <>
+                      <span>•</span>
+                      <span style={{ textTransform: 'capitalize' }}>{profile.difficulty_preference}</span>
+                    </>
+                  )}
+                  {primaryResort && (
+                    <>
+                      <span>•</span>
+                      <span style={{ color: '#00B4D8' }}>{primaryResort.name}</span>
+                    </>
+                  )}
+                </div>
               </div>
 
               {/* Menu Items */}

@@ -215,7 +215,7 @@ export function TrailMap({
           <TransformWrapper
             initialScale={1}
             minScale={1}
-            maxScale={4}
+            maxScale={6}
             centerOnInit={true}
             wheel={{ 
               step: 0.2
