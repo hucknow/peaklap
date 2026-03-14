@@ -5,7 +5,7 @@ import { GlassCard } from '@/components/GlassCard';
 import { Eye, EyeOff, CheckCircle, AlertCircle, Mail } from 'lucide-react';
 
 // Consistent logo URL used across the app
-const LOGO_URL = 'https://customer-assets.emergentagent.com/job_run-sesh/artifacts/3n8ymt7j_PeakLap_Logo.png';
+const LOGO_URL = 'https://customer-assets.emergentagent.com/job_code-review-preview/artifacts/18r8cfx3_PeakLap_Logo_dark.png';
 
 export default function Signup() {
   const [email, setEmail] = useState('');
