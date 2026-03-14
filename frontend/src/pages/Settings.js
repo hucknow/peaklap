@@ -4,7 +4,6 @@ import { useResort } from '@/contexts/ResortContext';
 import { Header } from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
 import { GlassCard } from '@/components/GlassCard';
-import { SnowStake } from '@/components/SnowStake';
 import { DifficultyBadge } from '@/components/DifficultyBadge';
 import { supabase } from '@/lib/supabase';
 import { Minus, Plus, LogOut, Coffee, Lightbulb, Bug, ExternalLink, ChevronRight, Check, Mountain, Search, X, Heart } from 'lucide-react';
@@ -563,16 +562,6 @@ export default function Settings() {
                   </button>
                 </div>
               )}
-              
-              {/* Mini Snow Stake Preview */}
-              <div className="pt-2">
-                <SnowStake
-                  daysLogged={0}
-                  goalDays={goalDays}
-                  verticalLogged={0}
-                  goalVertical={goalVertical}
-                />
-              </div>
             </div>
           </GlassCard>
 
