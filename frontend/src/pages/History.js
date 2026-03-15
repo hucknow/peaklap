@@ -11,7 +11,7 @@ import { StatsSection } from '@/components/StatsSection';
 import { supabase } from '@/lib/supabase';
 import { useDaySummary } from '@/lib/hooks';
 import { format, parseISO, isToday as checkIsToday, startOfDay, endOfDay } from 'date-fns';
-import { Trash2, Calendar, TrendingUp, Mountain, ChevronRight, Star, ChevronDown } from 'lucide-react';
+import { Trash2, Calendar, TrendingUp, Mountain, ChevronRight, Star, ChevronDown, Edit2, X, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function History() {
@@ -25,6 +25,9 @@ export default function History() {
   const [selectedDate, setSelectedDate] = useState(null);
   const [showDaySummary, setShowDaySummary] = useState(false);
   const [expandedDays, setExpandedDays] = useState({});
+  const [editMode, setEditMode] = useState(false);
+  const [showDeleteDayConfirm, setShowDeleteDayConfirm] = useState(null);
+  const [showDeleteRunConfirm, setShowDeleteRunConfirm] = useState(null);
 
   // Day summary hook for selected date
   const daySummaryData = useDaySummary(profile?.id, selectedDate || new Date());
@@ -192,6 +195,67 @@ export default function History() {
     return result;
   };
 
+  // Delete a single run from history
+  const handleDeleteRun = async (logId) => {
+    try {
+      const { error } = await supabase
+        .from('user_logs')
+        .delete()
+        .eq('id', logId);
+
+      if (error) {
+        toast.error('Failed to delete run');
+        return;
+      }
+
+      toast.success('Run deleted');
+      setShowDeleteRunConfirm(null);
+      loadGroupedLogs();
+      loadTodayLogs();
+      loadLifetimeRuns();
+    } catch (err) {
+      console.error('Error deleting run:', err);
+      toast.error('Failed to delete run');
+    }
+  };
+
+  // Delete all runs for a specific day
+  const handleDeleteDay = async (dateStr) => {
+    try {
+      const dayData = groupedLogs[dateStr];
+      if (!dayData || dayData.logs.length === 0) return;
+
+      const logIds = dayData.logs.map(log => log.id);
+      
+      const { error } = await supabase
+        .from('user_logs')
+        .delete()
+        .in('id', logIds);
+
+      if (error) {
+        toast.error('Failed to delete day');
+        return;
+      }
+
+      // Also delete day summary if exists
+      await supabase
+        .from('day_summaries')
+        .delete()
+        .eq('user_id', profile.id)
+        .eq('session_date', dateStr);
+
+      toast.success(`Deleted ${logIds.length} runs from ${format(parseISO(dateStr), 'MMM d')}`);
+      setShowDeleteDayConfirm(null);
+      loadGroupedLogs();
+      loadTodayLogs();
+      loadLifetimeRuns();
+      loadDaySummaries();
+    } catch (err) {
+      console.error('Error deleting day:', err);
+      toast.error('Failed to delete day');
+    }
+  };
+
   const toggleDayExpansion = (dateStr) => {
     setExpandedDays(prev => ({
       ...prev,
@@ -225,10 +289,19 @@ export default function History() {
           <h2 className="text-lg font-semibold text-white" style={{ fontFamily: 'Manrope, sans-serif' }}>
             Today's Runs
           </h2>
-          <div className="flex items-center gap-2 text-sm" style={{ color: 'rgba(255,255,255,0.6)' }}>
-            <span>{todayLogs.length} runs</span>
-            <span>•</span>
-            <span style={{ fontFamily: 'JetBrains Mono, monospace' }}>{totalVertical.toLocaleString()} ft</span>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 text-sm" style={{ color: 'rgba(255,255,255,0.6)' }}>
+              <span>{todayLogs.length} runs</span>
+              <span>•</span>
+              <span style={{ fontFamily: 'JetBrains Mono, monospace' }}>{totalVertical.toLocaleString()} ft</span>
+            </div>
+            <button
+              onClick={() => setEditMode(!editMode)}
+              className="p-2 rounded-full transition-colors"
+              style={{ backgroundColor: editMode ? 'rgba(0, 180, 216, 0.2)' : 'rgba(255,255,255,0.05)' }}
+            >
+              <Edit2 size={16} style={{ color: editMode ? '#00B4D8' : 'rgba(255,255,255,0.5)' }} />
+            </button>
           </div>
         </div>
 
@@ -258,6 +331,14 @@ export default function History() {
                   </span>
                 </div>
               </div>
+              {editMode && (
+                <button
+                  onClick={() => setShowDeleteRunConfirm(log)}
+                  className="p-2 rounded-full hover:bg-red-500/20 transition-colors ml-2"
+                >
+                  <Trash2 size={18} style={{ color: '#FF1744' }} />
+                </button>
+              )}
             </div>
           </GlassCard>
         ))}
@@ -280,9 +361,18 @@ export default function History() {
 
     return (
       <div className="space-y-3">
-        <h2 className="text-lg font-semibold text-white mb-2" style={{ fontFamily: 'Manrope, sans-serif' }}>
-          Season Runs
-        </h2>
+        <div className="flex items-center justify-between mb-2">
+          <h2 className="text-lg font-semibold text-white" style={{ fontFamily: 'Manrope, sans-serif' }}>
+            Season Runs
+          </h2>
+          <button
+            onClick={() => setEditMode(!editMode)}
+            className="p-2 rounded-full transition-colors"
+            style={{ backgroundColor: editMode ? 'rgba(0, 180, 216, 0.2)' : 'rgba(255,255,255,0.05)' }}
+          >
+            <Edit2 size={16} style={{ color: editMode ? '#00B4D8' : 'rgba(255,255,255,0.5)' }} />
+          </button>
+        </div>
         
         {visibleDates.map((dateStr) => {
           const dayData = groupedLogs[dateStr];
@@ -328,14 +418,27 @@ export default function History() {
                   </div>
                 </div>
                 
-                <ChevronDown 
-                  size={20} 
-                  style={{ 
-                    color: 'rgba(255,255,255,0.3)',
-                    transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
-                    transition: 'transform 0.2s ease'
-                  }} 
-                />
+                <div className="flex items-center gap-2">
+                  {editMode && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setShowDeleteDayConfirm(dateStr);
+                      }}
+                      className="p-2 rounded-full hover:bg-red-500/20 transition-colors"
+                    >
+                      <Trash2 size={18} style={{ color: '#FF1744' }} />
+                    </button>
+                  )}
+                  <ChevronDown 
+                    size={20} 
+                    style={{ 
+                      color: 'rgba(255,255,255,0.3)',
+                      transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
+                      transition: 'transform 0.2s ease'
+                    }} 
+                  />
+                </div>
               </div>
 
               {/* Expanded Runs List */}
@@ -349,9 +452,9 @@ export default function History() {
                         backgroundColor: idx % 2 === 0 ? 'rgba(255,255,255,0.02)' : 'transparent'
                       }}
                     >
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-3 flex-1 min-w-0">
                         <div className="flex items-center gap-2">
-                          <span className="text-sm text-white" style={{ fontFamily: 'Manrope, sans-serif' }}>
+                          <span className="text-sm text-white truncate" style={{ fontFamily: 'Manrope, sans-serif' }}>
                             {log.runs?.name || 'Unknown Run'}
                           </span>
                           {log.runs?.difficulty && (
@@ -359,9 +462,22 @@ export default function History() {
                           )}
                         </div>
                       </div>
-                      <span className="text-xs" style={{ color: 'rgba(255,255,255,0.5)', fontFamily: 'JetBrains Mono, monospace' }}>
-                        {(log.runs?.vertical_ft || 0).toLocaleString()} ft
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs" style={{ color: 'rgba(255,255,255,0.5)', fontFamily: 'JetBrains Mono, monospace' }}>
+                          {(log.runs?.vertical_ft || 0).toLocaleString()} ft
+                        </span>
+                        {editMode && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setShowDeleteRunConfirm(log);
+                            }}
+                            className="p-1.5 rounded-full hover:bg-red-500/20 transition-colors"
+                          >
+                            <Trash2 size={14} style={{ color: '#FF1744' }} />
+                          </button>
+                        )}
+                      </div>
                     </div>
                   ))}
                   
@@ -577,6 +693,107 @@ export default function History() {
         isOpen={showDaySummary}
         onClose={() => setShowDaySummary(false)}
       />
+
+      {/* Delete Run Confirmation Modal */}
+      {showDeleteRunConfirm && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          onClick={() => setShowDeleteRunConfirm(null)}
+        >
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+          <div 
+            className="relative w-full max-w-sm rounded-2xl p-6"
+            style={{ backgroundColor: '#1A2126' }}
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-center w-12 h-12 rounded-full mx-auto mb-4" style={{ backgroundColor: 'rgba(255, 23, 68, 0.1)' }}>
+              <AlertTriangle size={24} style={{ color: '#FF1744' }} />
+            </div>
+            <h3 className="text-lg font-bold text-white text-center mb-2" style={{ fontFamily: 'Manrope, sans-serif' }}>
+              Delete Run?
+            </h3>
+            <p className="text-sm text-center mb-6" style={{ color: 'rgba(255,255,255,0.6)' }}>
+              Are you sure you want to delete "{showDeleteRunConfirm.runs?.name || 'this run'}"? This cannot be undone.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowDeleteRunConfirm(null)}
+                className="flex-1 py-3 rounded-full font-semibold transition-colors"
+                style={{
+                  backgroundColor: 'rgba(255,255,255,0.1)',
+                  color: 'white',
+                  fontFamily: 'Manrope, sans-serif'
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleDeleteRun(showDeleteRunConfirm.id)}
+                className="flex-1 py-3 rounded-full font-semibold transition-colors"
+                style={{
+                  backgroundColor: '#FF1744',
+                  color: 'white',
+                  fontFamily: 'Manrope, sans-serif'
+                }}
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Day Confirmation Modal */}
+      {showDeleteDayConfirm && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          onClick={() => setShowDeleteDayConfirm(null)}
+        >
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+          <div 
+            className="relative w-full max-w-sm rounded-2xl p-6"
+            style={{ backgroundColor: '#1A2126' }}
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-center w-12 h-12 rounded-full mx-auto mb-4" style={{ backgroundColor: 'rgba(255, 23, 68, 0.1)' }}>
+              <AlertTriangle size={24} style={{ color: '#FF1744' }} />
+            </div>
+            <h3 className="text-lg font-bold text-white text-center mb-2" style={{ fontFamily: 'Manrope, sans-serif' }}>
+              Delete Entire Day?
+            </h3>
+            <p className="text-sm text-center mb-2" style={{ color: 'rgba(255,255,255,0.6)' }}>
+              This will delete all {groupedLogs[showDeleteDayConfirm]?.logs.length || 0} runs logged on {format(parseISO(showDeleteDayConfirm), 'MMMM d, yyyy')}.
+            </p>
+            <p className="text-xs text-center mb-6" style={{ color: '#FF1744' }}>
+              This action cannot be undone.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowDeleteDayConfirm(null)}
+                className="flex-1 py-3 rounded-full font-semibold transition-colors"
+                style={{
+                  backgroundColor: 'rgba(255,255,255,0.1)',
+                  color: 'white',
+                  fontFamily: 'Manrope, sans-serif'
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleDeleteDay(showDeleteDayConfirm)}
+                className="flex-1 py-3 rounded-full font-semibold transition-colors"
+                style={{
+                  backgroundColor: '#FF1744',
+                  color: 'white',
+                  fontFamily: 'Manrope, sans-serif'
+                }}
+              >
+                Delete Day
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <BottomNav />
     </div>
