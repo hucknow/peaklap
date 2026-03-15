@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useResort } from '@/contexts/ResortContext';
 import { Header } from '@/components/Header';
@@ -10,7 +10,7 @@ import { OfflineBanner } from '@/components/OfflineBanner';
 import { TrailMap } from '@/components/TrailMap';
 import { supabase } from '@/lib/supabase';
 import { useRunChecklist, useSyncQueue, useOnlineStatus } from '@/lib/hooks';
-import { MapPin, Mountain } from 'lucide-react';
+import { MapPin, Mountain, Search } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function LogRun() {
@@ -55,10 +55,39 @@ export default function LogRun() {
   // UI state
   const [showRunDetail, setShowRunDetail] = useState(false);
   const [selectedRun, setSelectedRun] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Get last logged run
   const lastLog = userLogs.length > 0 ? userLogs[0] : null;
   const lastRun = lastLog ? { ...lastLog, runs: runs.find(r => r.id === lastLog.run_id) } : null;
+
+  // Filter runs by search query and return grouped
+  const getSearchFilteredGroupedRuns = useMemo(() => {
+    const baseGrouped = getGroupedRuns();
+    
+    if (!searchQuery.trim()) {
+      return baseGrouped;
+    }
+    
+    const query = searchQuery.toLowerCase();
+    const filteredGrouped = {};
+    
+    Object.entries(baseGrouped).forEach(([zone, zoneRuns]) => {
+      const matchingRuns = zoneRuns.filter(run => 
+        run.name.toLowerCase().includes(query)
+      );
+      if (matchingRuns.length > 0) {
+        filteredGrouped[zone] = matchingRuns;
+      }
+    });
+    
+    return filteredGrouped;
+  }, [getGroupedRuns, searchQuery]);
+
+  // Count total filtered runs
+  const filteredRunCount = useMemo(() => {
+    return Object.values(getSearchFilteredGroupedRuns).reduce((sum, zoneRuns) => sum + zoneRuns.length, 0);
+  }, [getSearchFilteredGroupedRuns]);
 
   // Handle run tap (show detail)
   const handleRunTap = useCallback((run) => {
@@ -334,17 +363,32 @@ export default function LogRun() {
           </div>
         )}
 
+        {/* Search Runs */}
+        {selectedResort && (
+          <div className="relative mb-4">
+            <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'rgba(255,255,255,0.4)' }} />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search runs..."
+              className="w-full pl-10 pr-4 py-3 rounded-xl border-0 focus:outline-none focus:ring-2 focus:ring-[#00B4D8]"
+              style={{ backgroundColor: '#1A2126', color: 'white', fontFamily: 'Manrope, sans-serif' }}
+            />
+          </div>
+        )}
+
         {/* Run count */}
         {selectedResort && (
           <p className="text-sm font-medium text-white mb-4" style={{ fontFamily: 'Manrope, sans-serif' }}>
-            {runs.length} runs available
+            {searchQuery ? `${filteredRunCount} of ${runs.length}` : runs.length} runs {searchQuery ? 'found' : 'available'}
           </p>
         )}
 
         {/* Run Checklist */}
         {selectedResort && (
           <RunChecklist
-            groupedRuns={getGroupedRuns()}
+            groupedRuns={getSearchFilteredGroupedRuns}
             getRunStatus={getRunStatus}
             isInBucketList={isInBucketList}
             getTodayCount={getTodayCount}
