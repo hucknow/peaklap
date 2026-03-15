@@ -28,6 +28,7 @@ export default function History() {
   const [editMode, setEditMode] = useState(false);
   const [showDeleteDayConfirm, setShowDeleteDayConfirm] = useState(null);
   const [showDeleteRunConfirm, setShowDeleteRunConfirm] = useState(null);
+  const [expandedLifetimeRuns, setExpandedLifetimeRuns] = useState({});
 
   // Day summary hook for selected date
   const daySummaryData = useDaySummary(profile?.id, selectedDate || new Date());
@@ -109,8 +110,9 @@ export default function History() {
     
     let query = supabase
       .from('user_logs')
-      .select('run_id, runs(id, name, difficulty, vertical_ft, zone), ski_areas(name)')
-      .eq('user_id', profile.id);
+      .select('id, run_id, logged_at, runs(id, name, difficulty, vertical_ft, zone), ski_areas(name)')
+      .eq('user_id', profile.id)
+      .order('logged_at', { ascending: false });
     
     if (selectedResort?.id) {
       query = query.eq('ski_area_id', selectedResort.id);
@@ -119,7 +121,7 @@ export default function History() {
     const { data } = await query;
     
     if (data) {
-      // Group by run and count occurrences
+      // Group by run and count occurrences, also store log dates
       const runCounts = {};
       data.forEach(log => {
         const runId = log.run_id;
@@ -128,11 +130,16 @@ export default function History() {
             run: log.runs,
             resortName: log.ski_areas?.name,
             count: 0,
-            totalVertical: 0
+            totalVertical: 0,
+            logs: [] // Store individual logs with dates
           };
         }
         runCounts[runId].count += 1;
         runCounts[runId].totalVertical += log.runs?.vertical_ft || 0;
+        runCounts[runId].logs.push({
+          id: log.id,
+          logged_at: log.logged_at
+        });
       });
       
       // Convert to array and sort by count (descending)
@@ -516,59 +523,119 @@ export default function History() {
       );
     }
 
+    const toggleLifetimeRunExpansion = (runId) => {
+      setExpandedLifetimeRuns(prev => ({
+        ...prev,
+        [runId]: !prev[runId]
+      }));
+    };
+
     return (
       <div className="space-y-3">
         <h2 className="text-lg font-semibold text-white mb-2" style={{ fontFamily: 'Manrope, sans-serif' }}>
           Most Skied Runs
         </h2>
         
-        {lifetimeRuns.map((item, index) => (
-          <GlassCard 
-            key={item.run?.id || index}
-            className="p-4 transition-all hover:bg-white/10"
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                {/* Rank Badge */}
-                <div 
-                  className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold"
-                  style={{ 
-                    backgroundColor: index < 3 ? 'rgba(0, 180, 216, 0.2)' : 'rgba(255,255,255,0.05)',
-                    color: index < 3 ? '#00B4D8' : 'rgba(255,255,255,0.5)',
-                    fontFamily: 'JetBrains Mono, monospace'
-                  }}
-                >
-                  {index + 1}
-                </div>
-                
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <h3 className="text-base font-semibold text-white" style={{ fontFamily: 'Manrope, sans-serif' }}>
-                      {item.run?.name || 'Unknown Run'}
-                    </h3>
-                    {item.run?.difficulty && (
-                      <DifficultyBadge difficulty={item.run.difficulty} region={profile?.difficulty_region} />
-                    )}
+        {lifetimeRuns.map((item, index) => {
+          const runId = item.run?.id || index;
+          const isExpanded = expandedLifetimeRuns[runId];
+          
+          return (
+            <GlassCard 
+              key={runId}
+              className="overflow-hidden"
+            >
+              {/* Run Header - Clickable to expand */}
+              <div 
+                className="p-4 transition-all hover:bg-white/10 cursor-pointer"
+                onClick={() => toggleLifetimeRunExpansion(runId)}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    {/* Rank Badge */}
+                    <div 
+                      className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0"
+                      style={{ 
+                        backgroundColor: index < 3 ? 'rgba(0, 180, 216, 0.2)' : 'rgba(255,255,255,0.05)',
+                        color: index < 3 ? '#00B4D8' : 'rgba(255,255,255,0.5)',
+                        fontFamily: 'JetBrains Mono, monospace'
+                      }}
+                    >
+                      {index + 1}
+                    </div>
+                    
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className="text-base font-semibold text-white truncate" style={{ fontFamily: 'Manrope, sans-serif' }}>
+                          {item.run?.name || 'Unknown Run'}
+                        </h3>
+                        {item.run?.difficulty && (
+                          <DifficultyBadge difficulty={item.run.difficulty} region={profile?.difficulty_region} />
+                        )}
+                      </div>
+                      {item.resortName && (
+                        <p className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>
+                          {item.resortName}
+                        </p>
+                      )}
+                    </div>
                   </div>
-                  {item.resortName && (
-                    <p className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>
-                      {item.resortName}
+                  
+                  <div className="flex items-center gap-3">
+                    <div className="text-right">
+                      <div className="text-lg font-bold" style={{ color: '#00B4D8', fontFamily: 'JetBrains Mono, monospace' }}>
+                        {item.count}x
+                      </div>
+                      <div className="text-xs" style={{ color: 'rgba(255,255,255,0.5)', fontFamily: 'JetBrains Mono, monospace' }}>
+                        {item.totalVertical.toLocaleString()} ft
+                      </div>
+                    </div>
+                    <ChevronDown 
+                      size={20} 
+                      style={{ 
+                        color: 'rgba(255,255,255,0.3)',
+                        transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
+                        transition: 'transform 0.2s ease'
+                      }} 
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Expanded Dates List */}
+              {isExpanded && item.logs && item.logs.length > 0 && (
+                <div className="border-t" style={{ borderColor: 'rgba(255,255,255,0.1)' }}>
+                  <div className="px-4 py-2" style={{ backgroundColor: 'rgba(255,255,255,0.02)' }}>
+                    <p className="text-xs font-medium" style={{ color: 'rgba(255,255,255,0.5)' }}>
+                      Dates Logged ({item.logs.length})
                     </p>
-                  )}
+                  </div>
+                  <div className="max-h-48 overflow-y-auto">
+                    {item.logs.map((log, idx) => (
+                      <div 
+                        key={log.id}
+                        className="px-4 py-2.5 flex items-center justify-between"
+                        style={{ 
+                          backgroundColor: idx % 2 === 0 ? 'rgba(255,255,255,0.02)' : 'transparent'
+                        }}
+                      >
+                        <div className="flex items-center gap-2">
+                          <Calendar size={14} style={{ color: 'rgba(255,255,255,0.4)' }} />
+                          <span className="text-sm text-white" style={{ fontFamily: 'Manrope, sans-serif' }}>
+                            {format(new Date(log.logged_at), 'EEEE, MMM d, yyyy')}
+                          </span>
+                        </div>
+                        <span className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>
+                          {format(new Date(log.logged_at), 'h:mm a')}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
-              
-              <div className="text-right">
-                <div className="text-lg font-bold" style={{ color: '#00B4D8', fontFamily: 'JetBrains Mono, monospace' }}>
-                  {item.count}x
-                </div>
-                <div className="text-xs" style={{ color: 'rgba(255,255,255,0.5)', fontFamily: 'JetBrains Mono, monospace' }}>
-                  {item.totalVertical.toLocaleString()} ft
-                </div>
-              </div>
-            </div>
-          </GlassCard>
-        ))}
+              )}
+            </GlassCard>
+          );
+        })}
       </div>
     );
   };
