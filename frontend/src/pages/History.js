@@ -296,19 +296,10 @@ export default function History() {
           <h2 className="text-lg font-semibold text-white" style={{ fontFamily: 'Manrope, sans-serif' }}>
             Today's Runs
           </h2>
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 text-sm" style={{ color: 'rgba(255,255,255,0.6)' }}>
-              <span>{todayLogs.length} runs</span>
-              <span>•</span>
-              <span style={{ fontFamily: 'JetBrains Mono, monospace' }}>{totalVertical.toLocaleString()} ft</span>
-            </div>
-            <button
-              onClick={() => setEditMode(!editMode)}
-              className="p-2 rounded-full transition-colors"
-              style={{ backgroundColor: editMode ? 'rgba(0, 180, 216, 0.2)' : 'rgba(255,255,255,0.05)' }}
-            >
-              <Edit2 size={16} style={{ color: editMode ? '#00B4D8' : 'rgba(255,255,255,0.5)' }} />
-            </button>
+          <div className="flex items-center gap-2 text-sm" style={{ color: 'rgba(255,255,255,0.6)' }}>
+            <span>{todayLogs.length} runs</span>
+            <span>•</span>
+            <span style={{ fontFamily: 'JetBrains Mono, monospace' }}>{totalVertical.toLocaleString()} ft</span>
           </div>
         </div>
 
@@ -368,18 +359,9 @@ export default function History() {
 
     return (
       <div className="space-y-3">
-        <div className="flex items-center justify-between mb-2">
-          <h2 className="text-lg font-semibold text-white" style={{ fontFamily: 'Manrope, sans-serif' }}>
-            Season Runs
-          </h2>
-          <button
-            onClick={() => setEditMode(!editMode)}
-            className="p-2 rounded-full transition-colors"
-            style={{ backgroundColor: editMode ? 'rgba(0, 180, 216, 0.2)' : 'rgba(255,255,255,0.05)' }}
-          >
-            <Edit2 size={16} style={{ color: editMode ? '#00B4D8' : 'rgba(255,255,255,0.5)' }} />
-          </button>
-        </div>
+        <h2 className="text-lg font-semibold text-white mb-2" style={{ fontFamily: 'Manrope, sans-serif' }}>
+          Season Runs
+        </h2>
         
         {visibleDates.map((dateStr) => {
           const dayData = groupedLogs[dateStr];
@@ -619,15 +601,32 @@ export default function History() {
                           backgroundColor: idx % 2 === 0 ? 'rgba(255,255,255,0.02)' : 'transparent'
                         }}
                       >
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-1 min-w-0">
                           <Calendar size={14} style={{ color: 'rgba(255,255,255,0.4)' }} />
-                          <span className="text-sm text-white" style={{ fontFamily: 'Manrope, sans-serif' }}>
+                          <span className="text-sm text-white truncate" style={{ fontFamily: 'Manrope, sans-serif' }}>
                             {format(new Date(log.logged_at), 'EEEE, MMM d, yyyy')}
                           </span>
                         </div>
-                        <span className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>
-                          {format(new Date(log.logged_at), 'h:mm a')}
-                        </span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>
+                            {format(new Date(log.logged_at), 'h:mm a')}
+                          </span>
+                          {editMode && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setShowDeleteRunConfirm({ 
+                                  id: log.id, 
+                                  runs: item.run,
+                                  logged_at: log.logged_at
+                                });
+                              }}
+                              className="p-1.5 rounded-full hover:bg-red-500/20 transition-colors"
+                            >
+                              <Trash2 size={14} style={{ color: '#FF1744' }} />
+                            </button>
+                          )}
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -643,9 +642,58 @@ export default function History() {
   // Get username for page title
   const userName = profile?.username || 'Rider';
 
+  const periodLabels = {
+    today: 'Today',
+    season: 'Season',
+    lifetime: 'Lifetime'
+  };
+
   return (
     <div className="min-h-screen pb-24" style={{ backgroundColor: '#12181B' }} data-testid="history-page">
       <Header />
+      
+      {/* Sticky Toggle Bar */}
+      <div 
+        className="sticky top-0 z-40 px-6 py-3"
+        style={{ 
+          backgroundColor: 'rgba(18, 24, 27, 0.95)',
+          backdropFilter: 'blur(12px)',
+          borderBottom: '1px solid rgba(255,255,255,0.05)'
+        }}
+      >
+        <div className="flex items-center justify-between">
+          <div 
+            className="inline-flex rounded-full p-1"
+            style={{ backgroundColor: 'rgba(255,255,255,0.05)' }}
+          >
+            {['today', 'season', 'lifetime'].map((p) => (
+              <button
+                key={p}
+                onClick={() => setPeriod(p)}
+                className="px-4 py-1.5 rounded-full text-sm font-medium transition-all"
+                style={{
+                  backgroundColor: period === p ? '#00B4D8' : 'transparent',
+                  color: period === p ? '#000000' : 'rgba(255,255,255,0.6)',
+                  fontFamily: 'Manrope, sans-serif'
+                }}
+                data-testid={`period-toggle-${p}`}
+              >
+                {periodLabels[p]}
+              </button>
+            ))}
+          </div>
+          
+          {/* Edit Mode Toggle - Always visible */}
+          <button
+            onClick={() => setEditMode(!editMode)}
+            className="p-2 rounded-full transition-colors"
+            style={{ backgroundColor: editMode ? 'rgba(0, 180, 216, 0.2)' : 'rgba(255,255,255,0.05)' }}
+            title={editMode ? 'Exit edit mode' : 'Edit runs'}
+          >
+            <Edit2 size={16} style={{ color: editMode ? '#00B4D8' : 'rgba(255,255,255,0.5)' }} />
+          </button>
+        </div>
+      </div>
       
       <div className="p-6">
         {/* Page Title */}
@@ -653,7 +701,7 @@ export default function History() {
           <span style={{ color: '#00B4D8' }}>{userName}</span> — Your mountain legacy. 🧭
         </h1>
 
-        {/* Stats Section with Toggle (controlled by History page) */}
+        {/* Stats Section without Toggle (toggle is now sticky above) */}
         <div className="mb-6">
           <StatsSection 
             profile={profile} 
@@ -661,6 +709,7 @@ export default function History() {
             showSnowStake={false}
             period={period}
             onPeriodChange={setPeriod}
+            hideToggle={true}
           />
         </div>
 

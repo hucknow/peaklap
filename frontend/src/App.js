@@ -8,6 +8,7 @@ import { offlineStorage } from '@/lib/offline';
 import { isNative, setupBackButton, addNetworkListener, setStatusBarStyle, hideSplashScreen } from '@/lib/platform';
 import Login from '@/pages/Login';
 import Signup from '@/pages/Signup';
+import ResetPassword from '@/pages/ResetPassword';
 import Onboarding from '@/pages/Onboarding';
 import Home from '@/pages/Home';
 import Resorts from '@/pages/Resorts';
@@ -138,6 +139,7 @@ function AppRoutes() {
       {/* Public routes - redirect to home if logged in */}
       <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
       <Route path="/signup" element={<PublicRoute><Signup /></PublicRoute>} />
+      <Route path="/reset-password" element={<ResetPassword />} />
       
       {/* Onboarding - requires auth but not onboarding_complete */}
       <Route path="/onboarding" element={user ? <Onboarding /> : <Navigate to="/login" replace />} />

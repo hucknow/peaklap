@@ -6,7 +6,7 @@ import { supabase } from '@/lib/supabase';
 import { MapPin, TrendingUp, Mountain } from 'lucide-react';
 import { format, startOfDay, endOfDay } from 'date-fns';
 
-export function StatsSection({ profile, selectedResort, showSnowStake = true, period: controlledPeriod, onPeriodChange }) {
+export function StatsSection({ profile, selectedResort, showSnowStake = true, period: controlledPeriod, onPeriodChange, hideToggle = false }) {
   const navigate = useNavigate();
   // Use controlled period if provided, otherwise use internal state
   const [internalPeriod, setInternalPeriod] = useState('season');
@@ -107,29 +107,31 @@ export function StatsSection({ profile, selectedResort, showSnowStake = true, pe
 
   return (
     <div className="space-y-4">
-      {/* Period Toggle */}
-      <div className="flex justify-center">
-        <div 
-          className="inline-flex rounded-full p-1"
-          style={{ backgroundColor: 'rgba(255,255,255,0.05)' }}
-        >
-          {['today', 'season', 'lifetime'].map((p) => (
-            <button
-              key={p}
-              onClick={() => handlePeriodChange(p)}
-              className="px-4 py-1.5 rounded-full text-sm font-medium transition-all"
-              style={{
-                backgroundColor: period === p ? '#00B4D8' : 'transparent',
-                color: period === p ? '#000000' : 'rgba(255,255,255,0.6)',
-                fontFamily: 'Manrope, sans-serif'
-              }}
-              data-testid={`period-toggle-${p}`}
-            >
-              {periodLabels[p]}
-            </button>
-          ))}
+      {/* Period Toggle - Hidden if hideToggle is true */}
+      {!hideToggle && (
+        <div className="flex justify-center">
+          <div 
+            className="inline-flex rounded-full p-1"
+            style={{ backgroundColor: 'rgba(255,255,255,0.05)' }}
+          >
+            {['today', 'season', 'lifetime'].map((p) => (
+              <button
+                key={p}
+                onClick={() => handlePeriodChange(p)}
+                className="px-4 py-1.5 rounded-full text-sm font-medium transition-all"
+                style={{
+                  backgroundColor: period === p ? '#00B4D8' : 'transparent',
+                  color: period === p ? '#000000' : 'rgba(255,255,255,0.6)',
+                  fontFamily: 'Manrope, sans-serif'
+                }}
+                data-testid={`period-toggle-${p}`}
+              >
+                {periodLabels[p]}
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Stats Grid */}
       <div className="flex gap-4">
