@@ -9,7 +9,10 @@ import { SnowStake, SnowStakeCompact } from '@/components/SnowStake';
 import { DifficultyBadge } from '@/components/DifficultyBadge';
 import { TrailMap } from '@/components/TrailMap';
 import { StatsSection } from '@/components/StatsSection';
+import { OfflineBanner } from '@/components/OfflineBanner';
 import { supabase } from '@/lib/supabase';
+import { offlineStorage, getCachedSeasonStats, cacheSeasonStats } from '@/lib/offline';
+import { getNetworkStatus } from '@/lib/platform';
 import { format } from 'date-fns';
 import { Heart, Mountain, TrendingUp, MapPin, Snowflake, Plus } from 'lucide-react';
 
@@ -32,52 +35,64 @@ export default function Home() {
 
   const loadStats = useCallback(async () => {
     if (!profile?.id) return;
-    
+
     // Create a cache key based on profile and resort
     const cacheKey = `${profile.id}-${selectedResort?.id || 'all'}`;
-    
+
     // Skip if already loading or already loaded for this combination
     if (loadingRef.current || statsLoadedRef.current === cacheKey) return;
-    
+
     loadingRef.current = true;
     setIsLoading(true);
-    
+
+    const isOnline = await getNetworkStatus();
+
     try {
-      // Build query - filter by selected resort if available
-      let logsQuery = supabase
-        .from('user_logs')
-        .select('run_id, runs(vertical_ft, ski_area_id)')
-        .eq('user_id', profile.id);
-      
-      if (selectedResort?.id) {
-        logsQuery = logsQuery.eq('ski_area_id', selectedResort.id);
-      }
-      
-      const { data: logs } = await logsQuery;
+      if (isOnline) {
+        // Build query - filter by selected resort if available
+        let logsQuery = supabase
+          .from('user_logs')
+          .select('run_id, runs(vertical_ft, ski_area_id)')
+          .eq('user_id', profile.id);
 
-      // Get total runs for selected resort or all
-      let runsQuery = supabase.from('runs').select('id, ski_area_id');
-      if (selectedResort?.id) {
-        runsQuery = runsQuery.eq('ski_area_id', selectedResort.id);
-      }
-      const { data: allRuns } = await runsQuery;
+        if (selectedResort?.id) {
+          logsQuery = logsQuery.eq('ski_area_id', selectedResort.id);
+        }
 
-      if (logs && allRuns) {
-        const uniqueRunIds = new Set(logs.map(l => l.run_id));
-        const totalVertical = logs.reduce((sum, log) => sum + (log.runs?.vertical_ft || 0), 0);
-        const completedRuns = uniqueRunIds.size;
-        const totalRuns = allRuns.length;
-        const completionPercent = totalRuns > 0 ? Math.round((completedRuns / totalRuns) * 100) : 0;
-        
-        setStats({
-          daysLogged: logs.length,
-          verticalLogged: totalVertical,
-          completionPercent,
-          totalRuns,
-          completedRuns
-        });
-        
-        statsLoadedRef.current = cacheKey;
+        const { data: logs } = await logsQuery;
+
+        // Get total runs for selected resort or all
+        let runsQuery = supabase.from('runs').select('id, ski_area_id');
+        if (selectedResort?.id) {
+          runsQuery = runsQuery.eq('ski_area_id', selectedResort.id);
+        }
+        const { data: allRuns } = await runsQuery;
+
+        if (logs && allRuns) {
+          const uniqueRunIds = new Set(logs.map(l => l.run_id));
+          const totalVertical = logs.reduce((sum, log) => sum + (log.runs?.vertical_ft || 0), 0);
+          const completedRuns = uniqueRunIds.size;
+          const totalRuns = allRuns.length;
+          const completionPercent = totalRuns > 0 ? Math.round((completedRuns / totalRuns) * 100) : 0;
+
+          const statsData = {
+            daysLogged: logs.length,
+            verticalLogged: totalVertical,
+            completionPercent,
+            totalRuns,
+            completedRuns
+          };
+
+          setStats(statsData);
+          await cacheSeasonStats(statsData);
+          statsLoadedRef.current = cacheKey;
+        }
+      } else {
+        // Load from cache
+        const cachedStats = await getCachedSeasonStats();
+        if (cachedStats) {
+          setStats(cachedStats);
+        }
       }
     } catch (error) {
       console.error('Error loading stats:', error);
@@ -245,7 +260,8 @@ export default function Home() {
   return (
     <div className="min-h-screen pb-24" style={{ backgroundColor: '#12181B' }} data-testid="home-page">
       <Header />
-      
+      <OfflineBanner />
+
       {/* Page Title */}
       <div className="p-6 pb-0">
         <h1 className="text-2xl font-bold text-white mb-1" style={{ fontFamily: 'Manrope, sans-serif' }}>

@@ -8,8 +8,11 @@ import { DifficultyBadge } from '@/components/DifficultyBadge';
 import { DaySummary } from '@/components/DaySummary';
 import { TrailMap } from '@/components/TrailMap';
 import { StatsSection } from '@/components/StatsSection';
+import { OfflineBanner } from '@/components/OfflineBanner';
 import { supabase } from '@/lib/supabase';
 import { useDaySummary } from '@/lib/hooks';
+import { offlineStorage } from '@/lib/offline';
+import { getNetworkStatus } from '@/lib/platform';
 import { format, parseISO, isToday as checkIsToday, startOfDay, endOfDay } from 'date-fns';
 import { Trash2, Calendar, TrendingUp, Mountain, ChevronRight, Star, ChevronDown } from 'lucide-react';
 import { toast } from 'sonner';
@@ -25,6 +28,7 @@ export default function History() {
   const [selectedDate, setSelectedDate] = useState(null);
   const [showDaySummary, setShowDaySummary] = useState(false);
   const [expandedDays, setExpandedDays] = useState({});
+  const [isShowingCached, setIsShowingCached] = useState(false);
 
   // Day summary hook for selected date
   const daySummaryData = useDaySummary(profile?.id, selectedDate || new Date());
@@ -32,45 +36,72 @@ export default function History() {
   // Load logs grouped by date (for Season view)
   const loadGroupedLogs = useCallback(async () => {
     if (!profile) return;
-    
-    // Build query - optionally filter by selected resort
-    let query = supabase
-      .from('user_logs')
-      .select('*, runs(name, difficulty, vertical_ft, zone), ski_areas(name)')
-      .eq('user_id', profile.id)
-      .order('logged_at', { ascending: false });
-    
-    // Filter by season (November 1st)
-    const now = new Date();
-    const currentYear = now.getFullYear();
-    const currentMonth = now.getMonth();
-    const seasonStartYear = currentMonth < 10 ? currentYear - 1 : currentYear;
-    const seasonStart = new Date(seasonStartYear, 10, 1).toISOString();
-    query = query.gte('logged_at', seasonStart);
-    
-    if (selectedResort?.id) {
-      query = query.eq('ski_area_id', selectedResort.id);
-    }
-    
-    const { data } = await query;
-    
-    if (data) {
-      // Group by date
-      const grouped = {};
-      data.forEach(log => {
-        const dateKey = format(new Date(log.logged_at), 'yyyy-MM-dd');
-        if (!grouped[dateKey]) {
-          grouped[dateKey] = {
-            date: dateKey,
-            logs: [],
-            totalVertical: 0,
-            resortName: log.ski_areas?.name
-          };
-        }
-        grouped[dateKey].logs.push(log);
-        grouped[dateKey].totalVertical += log.runs?.vertical_ft || 0;
-      });
-      setGroupedLogs(grouped);
+
+    const isOnline = await getNetworkStatus();
+
+    if (isOnline) {
+      // Build query - optionally filter by selected resort
+      let query = supabase
+        .from('user_logs')
+        .select('*, runs(name, difficulty, vertical_ft, zone), ski_areas(name)')
+        .eq('user_id', profile.id)
+        .order('logged_at', { ascending: false });
+
+      // Filter by season (November 1st)
+      const now = new Date();
+      const currentYear = now.getFullYear();
+      const currentMonth = now.getMonth();
+      const seasonStartYear = currentMonth < 10 ? currentYear - 1 : currentYear;
+      const seasonStart = new Date(seasonStartYear, 10, 1).toISOString();
+      query = query.gte('logged_at', seasonStart);
+
+      if (selectedResort?.id) {
+        query = query.eq('ski_area_id', selectedResort.id);
+      }
+
+      const { data } = await query;
+
+      if (data) {
+        await offlineStorage.cacheLogs(profile.id, data);
+        // Group by date
+        const grouped = {};
+        data.forEach(log => {
+          const dateKey = format(new Date(log.logged_at), 'yyyy-MM-dd');
+          if (!grouped[dateKey]) {
+            grouped[dateKey] = {
+              date: dateKey,
+              logs: [],
+              totalVertical: 0,
+              resortName: log.ski_areas?.name
+            };
+          }
+          grouped[dateKey].logs.push(log);
+          grouped[dateKey].totalVertical += log.runs?.vertical_ft || 0;
+        });
+        setGroupedLogs(grouped);
+        setIsShowingCached(false);
+      }
+    } else {
+      // Load from cache
+      const cached = await offlineStorage.getCachedLogs(profile.id);
+      if (cached && cached.length > 0) {
+        const grouped = {};
+        cached.forEach(log => {
+          const dateKey = format(new Date(log.logged_at), 'yyyy-MM-dd');
+          if (!grouped[dateKey]) {
+            grouped[dateKey] = {
+              date: dateKey,
+              logs: [],
+              totalVertical: 0,
+              resortName: log.ski_areas?.name
+            };
+          }
+          grouped[dateKey].logs.push(log);
+          grouped[dateKey].totalVertical += log.runs?.vertical_ft || 0;
+        });
+        setGroupedLogs(grouped);
+        setIsShowingCached(true);
+      }
     }
   }, [profile, selectedResort?.id]);
 
@@ -463,8 +494,24 @@ export default function History() {
   return (
     <div className="min-h-screen pb-24" style={{ backgroundColor: '#12181B' }} data-testid="history-page">
       <Header />
-      
+      <OfflineBanner />
+
       <div className="p-6">
+        {/* Cached data banner */}
+        {isShowingCached && (
+          <div style={{
+            background: 'rgba(255,165,0,0.1)',
+            border: '1px solid rgba(255,165,0,0.2)',
+            borderRadius: '8px',
+            padding: '8px 12px',
+            fontSize: '12px',
+            color: 'rgba(255,165,0,0.8)',
+            marginBottom: '16px',
+            fontFamily: 'Manrope, sans-serif'
+          }}>
+            ⚡ Showing last synced data
+          </div>
+        )}
         {/* Page Title */}
         <h1 className="text-xl font-bold text-white mb-6" style={{ fontFamily: 'Manrope, sans-serif' }}>
           <span style={{ color: '#00B4D8' }}>{userName}</span> — Your mountain legacy. 🧭

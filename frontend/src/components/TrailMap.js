@@ -1,7 +1,8 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { TransformWrapper, TransformComponent, useControls } from 'react-zoom-pan-pinch';
 import { ZoomIn, ZoomOut, Maximize2, X, RotateCcw, Map } from 'lucide-react';
 import { GlassCard } from './GlassCard';
+import { downloadAndCacheMap } from '@/lib/offline';
 
 // Default trail map images
 const RESORT_MAPS = {
@@ -83,9 +84,9 @@ function ZoomControlsInner({ currentScale, onFullscreen, showFullscreenButton = 
   );
 }
 
-export function TrailMap({ 
-  resort, 
-  className = '', 
+export function TrailMap({
+  resort,
+  className = '',
   minHeight = 300,
   maxHeight = 500,
   showLabel = true,
@@ -97,6 +98,8 @@ export function TrailMap({
   const [imageError, setImageError] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [currentScale, setCurrentScale] = useState(1);
+  const [mapSrc, setMapSrc] = useState(null);
+  const [mapLoading, setMapLoading] = useState(false);
 
   // Get map URL based on resort name or map_url field
   const getMapUrl = useCallback(() => {
@@ -108,6 +111,25 @@ export function TrailMap({
     }
     return RESORT_MAPS.default;
   }, [resort]);
+
+  // Download and cache map when resort changes
+  useEffect(() => {
+    if (!resort?.id) return;
+
+    const mapUrl = getMapUrl();
+    setMapLoading(true);
+    setImageLoaded(false);
+
+    downloadAndCacheMap(resort.id, mapUrl)
+      .then(src => {
+        setMapSrc(src);
+        setMapLoading(false);
+      })
+      .catch(() => {
+        setMapSrc(mapUrl);
+        setMapLoading(false);
+      });
+  }, [resort?.id, getMapUrl]);
 
   const handleImageLoad = useCallback(() => {
     setImageLoaded(true);
@@ -248,20 +270,22 @@ export function TrailMap({
                 justifyContent: 'center'
               }}
             >
-              <img
-                src={getMapUrl()}
-                alt={`${resort?.name || 'Resort'} Trail Map`}
-                className="select-none pointer-events-none"
-                draggable={false}
-                onLoad={handleImageLoad}
-                onError={handleImageError}
-                style={{ 
-                  width: '100%',
-                  height: 'auto',
-                  objectFit: 'contain',
-                  maxHeight: maxHeight
-                }}
-              />
+              {mapSrc && (
+                <img
+                  src={mapSrc}
+                  alt={`${resort?.name || 'Resort'} Trail Map`}
+                  className="select-none pointer-events-none"
+                  draggable={false}
+                  onLoad={handleImageLoad}
+                  onError={handleImageError}
+                  style={{
+                    width: '100%',
+                    height: 'auto',
+                    objectFit: 'contain',
+                    maxHeight: maxHeight
+                  }}
+                />
+              )}
             </TransformComponent>
 
             {/* Overlays - Must be inside TransformWrapper to use useControls */}
@@ -280,9 +304,14 @@ export function TrailMap({
           </TransformWrapper>
           
           {/* Loading state */}
-          {!imageLoaded && (
-            <div className="absolute inset-0 flex items-center justify-center">
+          {(mapLoading || !imageLoaded) && mapSrc && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
               <div className="w-8 h-8 border-2 border-[#00B4D8] border-t-transparent rounded-full animate-spin" />
+              {mapLoading && (
+                <p className="text-xs" style={{ color: 'rgba(255,255,255,0.5)', fontFamily: 'Manrope, sans-serif' }}>
+                  Downloading trail map...
+                </p>
+              )}
             </div>
           )}
         </div>
@@ -353,17 +382,19 @@ export function TrailMap({
                   justifyContent: 'center'
                 }}
               >
-                <img
-                  src={getMapUrl()}
-                  alt={`${resort?.name || 'Resort'} Trail Map`}
-                  className="select-none pointer-events-none"
-                  draggable={false}
-                  style={{ 
-                    maxWidth: '100%',
-                    maxHeight: '100%',
-                    objectFit: 'contain'
-                  }}
-                />
+                {mapSrc && (
+                  <img
+                    src={mapSrc}
+                    alt={`${resort?.name || 'Resort'} Trail Map`}
+                    className="select-none pointer-events-none"
+                    draggable={false}
+                    style={{
+                      maxWidth: '100%',
+                      maxHeight: '100%',
+                      objectFit: 'contain'
+                    }}
+                  />
+                )}
               </TransformComponent>
 
               <ZoomControlsInner 

@@ -1,57 +1,74 @@
-import { WifiOff, CloudUpload, Check } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { addNetworkListener, getNetworkStatus } from '@/lib/platform';
+import { offlineStorage } from '@/lib/offline';
+import localforage from 'localforage';
 
-export function OfflineBanner({ isOnline, pendingCount, isSyncing, onSync }) {
-  if (isOnline && pendingCount === 0) return null;
+export function OfflineBanner() {
+  const [isOffline, setIsOffline] = useState(false);
+  const [pending, setPending] = useState(0);
+  const [lastSync, setLastSync] = useState(null);
+
+  useEffect(() => {
+    // Check initial status
+    getNetworkStatus().then(online => setIsOffline(!online));
+
+    // Get last sync time
+    localforage.getItem('peaklap_last_sync').then(time => {
+      if (time) {
+        const date = new Date(time);
+        setLastSync(date.toLocaleTimeString([], {
+          hour: '2-digit',
+          minute: '2-digit'
+        }));
+      }
+    });
+
+    // Get pending count
+    offlineStorage.getSyncQueue().then(queue => setPending(queue.length));
+
+    // Listen for network changes
+    const listener = addNetworkListener(async (connected) => {
+      setIsOffline(!connected);
+      if (!connected) {
+        const queue = await offlineStorage.getSyncQueue();
+        setPending(queue.length);
+      } else {
+        setPending(0);
+      }
+    });
+
+    return () => listener?.remove();
+  }, []);
+
+  if (!isOffline) return null;
 
   return (
-    <div 
-      className="sticky top-0 z-40 px-4 py-2 flex items-center justify-between"
-      style={{
-        backgroundColor: isOnline ? 'rgba(0, 180, 216, 0.1)' : 'rgba(255, 152, 0, 0.1)',
-        borderBottom: `1px solid ${isOnline ? 'rgba(0, 180, 216, 0.2)' : 'rgba(255, 152, 0, 0.2)'}`
-      }}
-    >
-      <div className="flex items-center gap-2">
-        {isOnline ? (
-          <CloudUpload size={16} style={{ color: '#00B4D8' }} />
-        ) : (
-          <WifiOff size={16} style={{ color: '#FF9800' }} />
-        )}
-        <span className="text-xs font-medium" style={{ 
-          color: isOnline ? '#00B4D8' : '#FF9800',
-          fontFamily: 'Manrope, sans-serif'
-        }}>
-          {isOnline 
-            ? `${pendingCount} run${pendingCount > 1 ? 's' : ''} ready to sync`
-            : 'Offline — syncing when connected'
-          }
+    <div style={{
+      background: 'rgba(255,165,0,0.12)',
+      borderBottom: '1px solid rgba(255,165,0,0.25)',
+      padding: '8px 16px',
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      gap: '8px',
+      fontFamily: 'Manrope, sans-serif',
+      fontSize: '12px',
+      color: 'rgba(255,165,0,0.9)',
+      letterSpacing: '0.01em'
+    }}>
+      <span>⚡ Offline</span>
+      {lastSync && (
+        <span style={{ color: 'rgba(255,165,0,0.6)' }}>
+          · Last sync: {lastSync}
         </span>
-      </div>
-
-      {isOnline && pendingCount > 0 && (
-        <button
-          onClick={onSync}
-          disabled={isSyncing}
-          className="flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold transition-all"
-          style={{
-            backgroundColor: '#00B4D8',
-            color: '#000',
-            opacity: isSyncing ? 0.7 : 1
-          }}
-        >
-          {isSyncing ? (
-            <>
-              <div className="w-3 h-3 border-2 border-black/30 border-t-black rounded-full animate-spin" />
-              Syncing...
-            </>
-          ) : (
-            <>
-              <Check size={12} />
-              Sync Now
-            </>
-          )}
-        </button>
+      )}
+      {pending > 0 && (
+        <span style={{ color: 'rgba(255,165,0,0.6)' }}>
+          · {pending} run{pending > 1 ? 's' : ''} pending
+        </span>
       )}
     </div>
   );
 }
+
+export default OfflineBanner;

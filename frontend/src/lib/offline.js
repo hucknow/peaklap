@@ -1,4 +1,5 @@
 import localforage from 'localforage';
+import { isNative } from './platform';
 
 // Initialize localForage stores
 const runsStore = localforage.createInstance({ name: 'sendit', storeName: 'runs' });
@@ -178,6 +179,172 @@ export const getCurrentPosition = () => {
       }
     );
   });
+};
+
+// Convert blob to base64
+const blobToBase64 = (blob) => new Promise((resolve, reject) => {
+  const reader = new FileReader();
+  reader.onloadend = () => resolve(reader.result);
+  reader.onerror = reject;
+  reader.readAsDataURL(blob);
+});
+
+// Download and cache trail map for offline use
+export const downloadAndCacheMap = async (resortId, mapUrl) => {
+  if (!mapUrl || !resortId) return mapUrl;
+
+  const cacheKey = `peaklap_map_${resortId}`;
+
+  try {
+    if (isNative()) {
+      // Android — use Capacitor Filesystem
+      const { Filesystem, Directory } = await import('@capacitor/filesystem');
+      const fileName = `map_${resortId}.jpg`;
+
+      // Return cached version if exists
+      try {
+        const file = await Filesystem.readFile({
+          path: fileName,
+          directory: Directory.Cache
+        });
+        return `data:image/jpeg;base64,${file.data}`;
+      } catch {
+        // Not cached yet — download it
+      }
+
+      // Download and cache
+      const response = await fetch(mapUrl);
+      const blob = await response.blob();
+      const base64 = await blobToBase64(blob);
+
+      await Filesystem.writeFile({
+        path: fileName,
+        data: base64.split(',')[1],
+        directory: Directory.Cache
+      });
+
+      return base64;
+
+    } else {
+      // Web — use localForage
+      const cached = await localforage.getItem(cacheKey);
+      if (cached) return cached;
+
+      const response = await fetch(mapUrl);
+      const blob = await response.blob();
+      const base64 = await blobToBase64(blob);
+      await localforage.setItem(cacheKey, base64);
+      return base64;
+    }
+  } catch (err) {
+    console.error('Map cache error:', err);
+    return mapUrl; // fallback to direct URL
+  }
+};
+
+// Clear cached map (call when resort changes)
+export const clearCachedMap = async (resortId) => {
+  try {
+    if (isNative()) {
+      const { Filesystem, Directory } = await import('@capacitor/filesystem');
+      await Filesystem.deleteFile({
+        path: `map_${resortId}.jpg`,
+        directory: Directory.Cache
+      });
+    } else {
+      await localforage.removeItem(`peaklap_map_${resortId}`);
+    }
+  } catch {}
+};
+
+// Cache season stats separately for fast home screen load
+export const cacheSeasonStats = async (stats) => {
+  await localforage.setItem('peaklap_season_stats', stats);
+};
+
+export const getCachedSeasonStats = async () => {
+  return await localforage.getItem('peaklap_season_stats');
+};
+
+// Process sync queue with hardened error handling
+export const processSyncQueue = async (supabase, getNetworkStatus) => {
+  const isOnline = await getNetworkStatus();
+  if (!isOnline) return { synced: 0, failed: 0 };
+
+  const queue = await offlineStorage.getSyncQueue();
+  if (queue.length === 0) return { synced: 0, failed: 0 };
+
+  let synced = 0;
+  let failed = 0;
+  const syncedIds = [];
+
+  for (const item of queue) {
+    try {
+      if (item.type === 'LOG_RUN' || !item.type) {
+        // Strip offline-only UI fields before syncing
+        const cleanPayload = { ...item };
+        delete cleanPayload._offline;
+        delete cleanPayload.runs;
+        delete cleanPayload.ski_areas;
+        delete cleanPayload.queued_at;
+        delete cleanPayload.type;
+
+        const { error } = await supabase
+          .from('user_logs')
+          .insert(cleanPayload);
+
+        if (error) throw new Error(error.message);
+      }
+
+      if (item.type === 'UPDATE_PROFILE') {
+        const { error } = await supabase
+          .from('profiles')
+          .update(item.payload)
+          .eq('id', item.userId);
+        if (error) throw new Error(error.message);
+      }
+
+      if (item.type === 'SAVE_SUMMARY') {
+        const { error } = await supabase
+          .from('day_summaries')
+          .upsert(item.payload);
+        if (error) throw new Error(error.message);
+      }
+
+      syncedIds.push(item.queued_at || item.logged_at);
+      synced++;
+
+    } catch (err) {
+      console.error('Sync failed:', item, err.message);
+      failed++;
+    }
+  }
+
+  // Remove synced items from queue
+  if (synced > 0) {
+    const remainingQueue = queue.filter(item =>
+      !syncedIds.includes(item.queued_at || item.logged_at)
+    );
+    await syncQueue.setItem('pending', remainingQueue);
+
+    // Refresh local cache from Supabase after sync
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data } = await supabase
+          .from('user_logs')
+          .select('*, runs(*), ski_areas(*)')
+          .eq('user_id', user.id)
+          .order('logged_at', { ascending: false })
+          .limit(100);
+        if (data) await offlineStorage.cacheLogs(user.id, data);
+      }
+    } catch {}
+
+    await localforage.setItem('peaklap_last_sync', new Date().toISOString());
+  }
+
+  return { synced, failed };
 };
 
 export default offlineStorage;

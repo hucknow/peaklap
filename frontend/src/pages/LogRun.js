@@ -10,6 +10,8 @@ import { OfflineBanner } from '@/components/OfflineBanner';
 import { TrailMap } from '@/components/TrailMap';
 import { supabase } from '@/lib/supabase';
 import { useRunChecklist, useSyncQueue, useOnlineStatus } from '@/lib/hooks';
+import { offlineStorage } from '@/lib/offline';
+import { getNetworkStatus } from '@/lib/platform';
 import { MapPin, Mountain } from 'lucide-react';
 import { toast } from 'sonner';
 
