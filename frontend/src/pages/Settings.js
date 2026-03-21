@@ -4,6 +4,7 @@ import { useResort } from '@/contexts/ResortContext';
 import { useRevenueCat } from '@/contexts/RevenueCatContext';
 import { Header } from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
+import Footer from '@/components/Footer';
 import { GlassCard } from '@/components/GlassCard';
 import { DifficultyBadge } from '@/components/DifficultyBadge';
 import { SubscriptionStatus } from '@/components/SubscriptionStatus';
@@ -903,6 +904,7 @@ export default function Settings() {
         </div>
       )}
 
+      <Footer />
       <BottomNav />
     </div>
   );

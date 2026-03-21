@@ -3,6 +3,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useResort } from '@/contexts/ResortContext';
 import { Header } from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
+import Footer from '@/components/Footer';
 import { GlassCard } from '@/components/GlassCard';
 import { RunChecklist } from '@/components/RunChecklist';
 import { RunDetailSheet } from '@/components/RunDetailSheet';
@@ -390,6 +391,7 @@ export default function LogRun() {
         region={profile?.difficulty_region}
       />
 
+      <Footer />
       <BottomNav />
     </div>
   );

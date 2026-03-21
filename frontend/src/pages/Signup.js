@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { GlassCard } from '@/components/GlassCard';
-import { Eye, EyeOff, CheckCircle, AlertCircle, Mail, Coffee } from 'lucide-react';
+import Footer from '@/components/Footer';
+import { Eye, EyeOff, CircleCheck as CheckCircle, CircleAlert as AlertCircle, Mail, Coffee } from 'lucide-react';
 
 // Consistent logo URL used across the app
 const LOGO_URL = 'https://customer-assets.emergentagent.com/job_code-review-preview/artifacts/18r8cfx3_PeakLap_Logo_dark.png';
@@ -13,6 +14,7 @@ export default function Signup() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState(null); // { type: 'success' | 'error', text: string }
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
   const { signUp } = useAuth();
   const navigate = useNavigate();
 
@@ -20,6 +22,15 @@ export default function Signup() {
     e.preventDefault();
     setLoading(true);
     setMessage(null);
+
+    if (!agreedToTerms) {
+      setMessage({
+        type: 'error',
+        text: 'Please agree to the Terms of Service'
+      });
+      setLoading(false);
+      return;
+    }
 
     const { data, error } = await signUp(email, password);
     
@@ -166,17 +177,79 @@ export default function Signup() {
               </div>
             </div>
 
+            <div style={{
+              display: 'flex',
+              alignItems: 'flex-start',
+              gap: '10px',
+              marginBottom: '20px',
+              cursor: 'pointer'
+            }}
+              onClick={() => setAgreedToTerms(!agreedToTerms)}
+            >
+              <div style={{
+                width: '20px',
+                height: '20px',
+                minWidth: '20px',
+                borderRadius: '4px',
+                border: `2px solid ${agreedToTerms
+                  ? '#00B4D8'
+                  : 'rgba(255,255,255,0.2)'}`,
+                background: agreedToTerms
+                  ? '#00B4D8'
+                  : 'transparent',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'all 0.2s',
+                marginTop: '2px'
+              }}>
+                {agreedToTerms && (
+                  <span style={{
+                    color: '#12181B',
+                    fontSize: '12px',
+                    fontWeight: '800'
+                  }}>
+                    ✓
+                  </span>
+                )}
+              </div>
+              <p style={{
+                fontSize: '13px',
+                color: 'rgba(255,255,255,0.6)',
+                margin: 0,
+                lineHeight: '1.5',
+                fontFamily: 'Manrope, sans-serif'
+              }}>
+                I agree to the{' '}
+                <a
+                  href="/terms"
+                  target="_blank"
+                  onClick={(e) => e.stopPropagation()}
+                  style={{
+                    color: '#00B4D8',
+                    textDecoration: 'none',
+                    fontWeight: '600'
+                  }}
+                >
+                  Terms of Service
+                </a>
+                {' '}and confirm I am 13 years of age or older.
+                PeakLap is not a safety app — always follow
+                resort safety guidelines on the mountain.
+              </p>
+            </div>
+
             <button
               data-testid="signup-submit"
               type="submit"
-              disabled={loading || message?.type === 'success'}
+              disabled={loading || message?.type === 'success' || !agreedToTerms}
               className="w-full py-3 rounded-full font-semibold transition-all mt-2"
               style={{
                 backgroundColor: '#00B4D8',
                 color: '#000000',
                 fontFamily: 'Manrope, sans-serif',
-                opacity: (loading || message?.type === 'success') ? 0.5 : 1,
-                cursor: message?.type === 'success' ? 'not-allowed' : 'pointer'
+                opacity: (loading || message?.type === 'success' || !agreedToTerms) ? 0.5 : 1,
+                cursor: (message?.type === 'success' || !agreedToTerms) ? 'not-allowed' : 'pointer'
               }}
             >
               {loading ? 'Creating account...' : 'Create Account'}
@@ -207,6 +280,7 @@ export default function Signup() {
           </div>
         </GlassCard>
       </div>
+      <Footer />
     </div>
   );
 }

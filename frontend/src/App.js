@@ -13,6 +13,7 @@ import LogRun from '@/pages/LogRun';
 import History from '@/pages/History';
 import Settings from '@/pages/Settings';
 import Subscription from '@/pages/Subscription';
+import Terms from '@/pages/Terms';
 import '@/App.css';
 
 // Loading spinner component
@@ -98,7 +99,10 @@ function AppRoutes() {
       }
       <Route path="/subscription" element={<ProtectedRoute><Subscription /></ProtectedRoute>} />
       }
-      
+
+      {/* Public legal pages */}
+      <Route path="/terms" element={<Terms />} />
+
       {/* Default route - always go to login first, let auth redirect if needed */}
       <Route path="/" element={<Navigate to="/login" replace />} />
       <Route path="*" element={<Navigate to="/login" replace />} />

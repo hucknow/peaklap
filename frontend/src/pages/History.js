@@ -3,6 +3,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useResort } from '@/contexts/ResortContext';
 import { Header } from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
+import Footer from '@/components/Footer';
 import { GlassCard } from '@/components/GlassCard';
 import { DifficultyBadge } from '@/components/DifficultyBadge';
 import { DaySummary } from '@/components/DaySummary';
@@ -625,6 +626,7 @@ export default function History() {
         onClose={() => setShowDaySummary(false)}
       />
 
+      <Footer />
       <BottomNav />
     </div>
   );

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { GlassCard } from '@/components/GlassCard';
 import { DifficultyBadge } from '@/components/DifficultyBadge';
+import Footer from '@/components/Footer';
 import { supabase } from '@/lib/supabase';
 import { Minus, Plus, Mountain, Search, Check } from 'lucide-react';
 import { toast } from 'sonner';
@@ -610,6 +611,7 @@ export default function Onboarding() {
           )}
         </div>
       </div>
+      <Footer />
     </div>
   );
 }

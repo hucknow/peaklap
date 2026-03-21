@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Header } from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
+import Footer from '@/components/Footer';
 import { Crown, Check, ArrowLeft, Sparkles, Loader as Loader2, Info } from 'lucide-react';
 import { toast } from 'sonner';
 import { isPlatform } from '@/lib/platform';
@@ -301,6 +302,7 @@ export default function Subscription() {
           </>
         )}
       </div>
+      <Footer />
       <BottomNav />
     </div>
   );
