@@ -5,6 +5,21 @@ export const isNative = () => {
   return window.Capacitor !== undefined;
 };
 
+// Check if running on specific platform(s)
+export const isPlatform = (platforms) => {
+  if (!window.Capacitor?.getPlatform) {
+    return false;
+  }
+
+  const currentPlatform = window.Capacitor.getPlatform();
+
+  if (Array.isArray(platforms)) {
+    return platforms.includes(currentPlatform);
+  }
+
+  return currentPlatform === platforms;
+};
+
 // Check network status
 export const getNetworkStatus = async () => {
   if (isNative()) {

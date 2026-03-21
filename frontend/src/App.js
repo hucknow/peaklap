@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 import { ResortProvider } from '@/contexts/ResortContext';
+import { RevenueCatProvider } from '@/contexts/RevenueCatContext';
 import { Toaster } from 'sonner';
 import Login from '@/pages/Login';
 import Signup from '@/pages/Signup';
@@ -11,6 +12,7 @@ import RunDetail from '@/pages/RunDetail';
 import LogRun from '@/pages/LogRun';
 import History from '@/pages/History';
 import Settings from '@/pages/Settings';
+import Subscription from '@/pages/Subscription';
 import '@/App.css';
 
 // Loading spinner component
@@ -74,18 +76,28 @@ function AppRoutes() {
     <Routes>
       {/* Public routes - redirect to home if logged in */}
       <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+      }
       <Route path="/signup" element={<PublicRoute><Signup /></PublicRoute>} />
+      }
       
       {/* Onboarding - requires auth but not onboarding_complete */}
       <Route path="/onboarding" element={user ? <Onboarding /> : <Navigate to="/login" replace />} />
       
       {/* Protected routes */}
       <Route path="/home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
+      }
       <Route path="/resorts" element={<ProtectedRoute><Resorts /></ProtectedRoute>} />
+      }
       <Route path="/runs/:id" element={<ProtectedRoute><RunDetail /></ProtectedRoute>} />
+      }
       <Route path="/log" element={<ProtectedRoute><LogRun /></ProtectedRoute>} />
+      }
       <Route path="/history" element={<ProtectedRoute><History /></ProtectedRoute>} />
+      }
       <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+      }
+      <Route path="/subscription" element={<ProtectedRoute><Subscription /></ProtectedRoute>} />
+      }
       
       {/* Default route - always go to login first, let auth redirect if needed */}
       <Route path="/" element={<Navigate to="/login" replace />} />
@@ -97,25 +109,27 @@ function AppRoutes() {
 function App() {
   return (
     <AuthProvider>
-      <ResortProvider>
-        <BrowserRouter>
-          <AppRoutes />
-          <Toaster 
-            position="top-center"
-            toastOptions={{
-              style: {
-                background: 'rgba(255, 255, 255, 0.05)',
-                backdropFilter: 'blur(12px)',
-                border: '1px solid rgba(255, 255, 255, 0.08)',
-                borderLeft: '3px solid #00E676',
-                borderRadius: '12px',
-                color: 'white',
-                fontFamily: 'Manrope, sans-serif',
-              },
-            }}
-          />
-        </BrowserRouter>
-      </ResortProvider>
+      <RevenueCatProvider>
+        <ResortProvider>
+          <BrowserRouter>
+            <AppRoutes />
+            <Toaster
+              position="top-center"
+              toastOptions={{
+                style: {
+                  background: 'rgba(255, 255, 255, 0.05)',
+                  backdropFilter: 'blur(12px)',
+                  border: '1px solid rgba(255, 255, 255, 0.08)',
+                  borderLeft: '3px solid #00E676',
+                  borderRadius: '12px',
+                  color: 'white',
+                  fontFamily: 'Manrope, sans-serif',
+                },
+              }}
+            />
+          </BrowserRouter>
+        </ResortProvider>
+      </RevenueCatProvider>
     </AuthProvider>
   );
 }

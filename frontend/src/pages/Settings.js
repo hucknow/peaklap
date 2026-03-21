@@ -1,12 +1,15 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useResort } from '@/contexts/ResortContext';
+import { useRevenueCat } from '@/contexts/RevenueCatContext';
 import { Header } from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
 import { GlassCard } from '@/components/GlassCard';
 import { DifficultyBadge } from '@/components/DifficultyBadge';
+import { SubscriptionStatus } from '@/components/SubscriptionStatus';
 import { supabase } from '@/lib/supabase';
-import { Minus, Plus, LogOut, Coffee, Lightbulb, Bug, ExternalLink, ChevronRight, Check, Mountain, Search, X, Heart } from 'lucide-react';
+import { isPlatform } from '@/lib/platform';
+import { Minus, Plus, LogOut, Coffee, Lightbulb, Bug, ExternalLink, ChevronRight, Check, Mountain, Search, X, Heart, Crown } from 'lucide-react';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 
@@ -36,7 +39,9 @@ const TERRAIN_AREA_OPTIONS = [
 export default function Settings() {
   const { profile, updateProfile, signOut } = useAuth();
   const { selectedResort, setSelectedResort, primaryResort: contextPrimaryResort, clearCurrentResort } = useResort();
+  const { isProUser, showCustomerCenter } = useRevenueCat();
   const navigate = useNavigate();
+  const isMobile = isPlatform(['android', 'ios']);
   
   // Profile state
   const [username, setUsername] = useState(profile?.username || '');
@@ -629,6 +634,27 @@ export default function Settings() {
               ))}
             </div>
           </GlassCard>
+
+          {/* Subscription Status */}
+          {isMobile && (
+            <div>
+              <SubscriptionStatus showManageButton={true} />
+              {!isProUser && (
+                <button
+                  onClick={() => navigate('/subscription')}
+                  className="w-full mt-4 py-4 rounded-xl font-semibold transition-all flex items-center justify-center gap-2"
+                  style={{
+                    background: 'linear-gradient(to right, #f59e0b, #eab308)',
+                    color: 'white',
+                    fontFamily: 'Manrope, sans-serif'
+                  }}
+                >
+                  <Crown size={20} />
+                  Upgrade to Pro
+                </button>
+              )}
+            </div>
+          )}
 
           {/* Support PeakLap Section */}
           <GlassCard className="p-6">
