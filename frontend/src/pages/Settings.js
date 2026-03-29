@@ -850,7 +850,7 @@ export default function Settings() {
             style={{ userSelect: 'none' }}
           >
             <p className="text-xs" style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'JetBrains Mono, monospace' }}>
-              PeakLap v0.1.0
+              PeakLap v0.2.0
             </p>
           </div>
         </div>
