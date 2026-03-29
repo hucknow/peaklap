@@ -8,9 +8,10 @@ import Footer from '@/components/Footer';
 import { GlassCard } from '@/components/GlassCard';
 import { DifficultyBadge } from '@/components/DifficultyBadge';
 import { SubscriptionStatus } from '@/components/SubscriptionStatus';
+import { ProposeContent } from '@/components/ProposeContent';
 import { supabase } from '@/lib/supabase';
 import { isPlatform } from '@/lib/platform';
-import { Minus, Plus, LogOut, Coffee, Lightbulb, Bug, ExternalLink, ChevronRight, Check, Mountain, Search, X, Heart, Crown } from 'lucide-react';
+import { Minus, Plus, LogOut, Coffee, Lightbulb, Bug, ExternalLink, ChevronRight, Check, Mountain, Search, X, Heart, Crown, MessageSquarePlus } from 'lucide-react';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 
@@ -67,7 +68,8 @@ export default function Settings() {
   const [suggestedRuns, setSuggestedRuns] = useState([]);
   const [bucketListIds, setBucketListIds] = useState([]);
   const [loadingRuns, setLoadingRuns] = useState(false);
-  
+  const [showProposeDialog, setShowProposeDialog] = useState(false);
+
   // Refs
   const resortsLoadedRef = useRef(false);
   const longPressTimerRef = useRef(null);
@@ -804,6 +806,29 @@ export default function Settings() {
                   </div>
                 </div>
               </a>
+
+              <button
+                onClick={() => setShowProposeDialog(true)}
+                className="flex items-center justify-between p-3 rounded-lg transition-all w-full text-left"
+                style={{
+                  backgroundColor: 'rgba(255, 255, 255, 0.03)',
+                  border: '1px solid rgba(255, 255, 255, 0.08)',
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.08)'}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.03)'}
+              >
+                <div className="flex items-center gap-3">
+                  <MessageSquarePlus size={20} style={{ color: '#00B4D8' }} />
+                  <div>
+                    <div className="text-sm font-semibold text-white" style={{ fontFamily: 'Manrope, sans-serif' }}>
+                      Propose Content
+                    </div>
+                    <div className="text-xs" style={{ color: 'rgba(255,255,255,0.5)' }}>
+                      Suggest new resorts, runs, or lifts
+                    </div>
+                  </div>
+                </div>
+              </button>
             </div>
           </GlassCard>
 
@@ -850,7 +875,7 @@ export default function Settings() {
             style={{ userSelect: 'none' }}
           >
             <p className="text-xs" style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'JetBrains Mono, monospace' }}>
-              PeakLap v0.2.0
+              PeakLap v0.3.0
             </p>
           </div>
         </div>
@@ -985,6 +1010,8 @@ export default function Settings() {
           </div>
         </div>
       )}
+
+      <ProposeContent open={showProposeDialog} onOpenChange={setShowProposeDialog} />
 
       <Footer />
       <BottomNav />

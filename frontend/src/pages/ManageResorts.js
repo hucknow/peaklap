@@ -271,7 +271,8 @@ export default function ManageResorts() {
                 {filteredResorts.map((resort) => (
                   <div
                     key={resort.id}
-                    className="flex items-center gap-4 p-4 border rounded-lg hover:bg-slate-50"
+                    className="flex items-center gap-4 p-4 border rounded-lg hover:bg-slate-50 cursor-pointer"
+                    onClick={() => navigate(`/admin/resort/${resort.id}`)}
                   >
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
@@ -294,7 +295,7 @@ export default function ManageResorts() {
                       )}
                     </div>
 
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-4" onClick={(e) => e.stopPropagation()}>
                       <div className="flex items-center gap-2">
                         <span className="text-sm text-slate-600">
                           {resort.is_published ? 'Published' : 'Hidden'}
@@ -308,7 +309,7 @@ export default function ManageResorts() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => navigate(`/admin/edit-resort/${resort.id}`)}
+                        onClick={(e) => { e.stopPropagation(); navigate(`/admin/edit-resort/${resort.id}`); }}
                       >
                         <Edit className="h-4 w-4" />
                       </Button>
@@ -317,7 +318,7 @@ export default function ManageResorts() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => handleReload(resort)}
+                          onClick={(e) => { e.stopPropagation(); handleReload(resort); }}
                         >
                           <RefreshCw className="h-4 w-4" />
                         </Button>
@@ -326,7 +327,7 @@ export default function ManageResorts() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => handleDelete(resort)}
+                        onClick={(e) => { e.stopPropagation(); handleDelete(resort); }}
                         className="text-red-600 hover:text-red-700"
                       >
                         <Trash2 className="h-4 w-4" />

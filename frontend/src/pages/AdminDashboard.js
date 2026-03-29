@@ -5,7 +5,7 @@ import { supabase } from '../lib/supabase';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Alert, AlertDescription } from '../components/ui/alert';
-import { Mountain, Upload, Settings, TrendingUp, CircleAlert as AlertCircle, Loader as Loader2 } from 'lucide-react';
+import { Mountain, Upload, Settings, TrendingUp, CircleAlert as AlertCircle, Loader as Loader2, MessageSquare } from 'lucide-react';
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
@@ -184,6 +184,25 @@ export default function AdminDashboard() {
                 <CardContent>
                   <p className="text-sm text-slate-600">
                     Control visibility, edit details, and manage all ski areas in the system
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-white cursor-pointer hover:shadow-lg transition-shadow" onClick={() => navigate('/admin/proposals')}>
+                <CardHeader>
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-purple-100 rounded-lg">
+                      <MessageSquare className="h-6 w-6 text-purple-600" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-slate-900">User Proposals</CardTitle>
+                      <CardDescription className="text-slate-600">Review user-submitted content</CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-slate-600">
+                    Review and approve user suggestions for new resorts, runs, and lifts
                   </p>
                 </CardContent>
               </Card>

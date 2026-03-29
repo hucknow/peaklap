@@ -19,6 +19,8 @@ import AdminDashboard from '@/pages/AdminDashboard';
 import BulkLoadResorts from '@/pages/BulkLoadResorts';
 import ManageResorts from '@/pages/ManageResorts';
 import EditResort from '@/pages/EditResort';
+import ResortDetail from '@/pages/ResortDetail';
+import AdminProposals from '@/pages/AdminProposals';
 import '@/App.css';
 
 // Loading spinner component
@@ -115,6 +117,10 @@ function AppRoutes() {
       <Route path="/admin/manage-resorts" element={<ProtectedRoute><ManageResorts /></ProtectedRoute>} />
       }
       <Route path="/admin/edit-resort/:id" element={<ProtectedRoute><EditResort /></ProtectedRoute>} />
+      }
+      <Route path="/admin/resort/:id" element={<ProtectedRoute><ResortDetail /></ProtectedRoute>} />
+      }
+      <Route path="/admin/proposals" element={<ProtectedRoute><AdminProposals /></ProtectedRoute>} />
       }
 
       {/* Public legal pages */}
