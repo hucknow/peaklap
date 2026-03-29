@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs'
 import { Search, Loader as Loader2, Mountain, Cable, CreditCard as Edit, Trash2, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 import { DifficultyBadge } from '../components/DifficultyBadge';
+import { Switch } from '../components/ui/switch';
 
 export default function ResortDetail() {
   const navigate = useNavigate();
@@ -106,6 +107,23 @@ export default function ResortDetail() {
     }
   };
 
+  const handleTogglePublish = async (checked) => {
+    try {
+      const { error } = await supabase
+        .from('ski_areas')
+        .update({ is_published: checked })
+        .eq('id', id);
+
+      if (error) throw error;
+
+      setResort(prev => ({ ...prev, is_published: checked }));
+      toast.success(`Resort ${checked ? 'published' : 'unpublished'}`);
+    } catch (err) {
+      console.error('Error updating publish status:', err);
+      toast.error('Failed to update publish status');
+    }
+  };
+
   const filteredRuns = runs.filter(r =>
     r.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     r.difficulty?.toLowerCase().includes(searchQuery.toLowerCase())
@@ -161,14 +179,25 @@ export default function ResortDetail() {
                   <Badge className="bg-gray-100 text-gray-800">Unpublished</Badge>
                 )}
               </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => navigate(`/admin/edit-resort/${resort.id}`)}
-              >
-                <Edit className="h-4 w-4 mr-2" />
-                Edit Resort
-              </Button>
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-slate-600">
+                    {resort.is_published ? 'Published' : 'Hidden'}
+                  </span>
+                  <Switch
+                    checked={resort.is_published || false}
+                    onCheckedChange={handleTogglePublish}
+                  />
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => navigate(`/admin/edit-resort/${resort.id}`)}
+                >
+                  <Edit className="h-4 w-4 mr-2" />
+                  Edit Resort
+                </Button>
+              </div>
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -210,9 +239,19 @@ export default function ResortDetail() {
           </CardHeader>
           <CardContent>
             <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="runs">Runs ({runs.length})</TabsTrigger>
-                <TabsTrigger value="lifts">Lifts ({lifts.length})</TabsTrigger>
+              <TabsList className="grid w-full grid-cols-2 bg-slate-100">
+                <TabsTrigger
+                  value="runs"
+                  className="data-[state=active]:bg-white data-[state=active]:text-slate-900 text-slate-700"
+                >
+                  Runs ({runs.length})
+                </TabsTrigger>
+                <TabsTrigger
+                  value="lifts"
+                  className="data-[state=active]:bg-white data-[state=active]:text-slate-900 text-slate-700"
+                >
+                  Lifts ({lifts.length})
+                </TabsTrigger>
               </TabsList>
 
               <TabsContent value="runs" className="space-y-3 mt-4">
