@@ -14,6 +14,7 @@ import History from '@/pages/History';
 import Settings from '@/pages/Settings';
 import Subscription from '@/pages/Subscription';
 import Terms from '@/pages/Terms';
+import AdminResortLoader from '@/pages/AdminResortLoader';
 import '@/App.css';
 
 // Loading spinner component
@@ -98,6 +99,10 @@ function AppRoutes() {
       <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
       }
       <Route path="/subscription" element={<ProtectedRoute><Subscription /></ProtectedRoute>} />
+      }
+
+      {/* Admin routes */}
+      <Route path="/admin/resort-loader" element={<ProtectedRoute><AdminResortLoader /></ProtectedRoute>} />
       }
 
       {/* Public legal pages */}

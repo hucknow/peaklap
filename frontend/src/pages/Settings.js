@@ -69,6 +69,8 @@ export default function Settings() {
   
   // Refs
   const resortsLoadedRef = useRef(false);
+  const longPressTimerRef = useRef(null);
+  const [longPressCount, setLongPressCount] = useState(0);
 
   // Parse terrain styles and areas from profile
   useEffect(() => {
@@ -278,6 +280,23 @@ export default function Settings() {
   const handleSignOut = async () => {
     await signOut();
     navigate('/login');
+  };
+
+  const handleVersionPress = () => {
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
+    }
+
+    longPressTimerRef.current = setTimeout(() => {
+      navigate('/admin/resort-loader');
+    }, 3000);
+  };
+
+  const handleVersionRelease = () => {
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
   };
 
   const filteredResorts = resorts.filter(resort =>
@@ -771,6 +790,21 @@ export default function Settings() {
             <LogOut size={18} />
             Sign Out
           </button>
+
+          {/* App Version (long-press to access admin) */}
+          <div
+            className="text-center py-4"
+            onMouseDown={handleVersionPress}
+            onMouseUp={handleVersionRelease}
+            onMouseLeave={handleVersionRelease}
+            onTouchStart={handleVersionPress}
+            onTouchEnd={handleVersionRelease}
+            style={{ userSelect: 'none' }}
+          >
+            <p className="text-xs" style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'JetBrains Mono, monospace' }}>
+              PeakLap v0.1.0
+            </p>
+          </div>
         </div>
       </div>
 
