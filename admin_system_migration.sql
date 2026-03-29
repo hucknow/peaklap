@@ -381,6 +381,87 @@ COMMENT ON COLUMN profiles.is_admin IS 'Admin users can access admin dashboard a
 COMMENT ON TABLE admin_logs IS 'Audit log of all admin actions';
 
 -- ==========================================
+-- USER PROPOSALS SYSTEM (v0.3.0)
+-- ==========================================
+
+-- Create user_proposals table
+CREATE TABLE IF NOT EXISTS user_proposals (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
+  proposal_type TEXT NOT NULL CHECK (proposal_type IN ('resort', 'run', 'lift')),
+  parent_id UUID REFERENCES ski_areas(id) ON DELETE CASCADE,
+  status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected')),
+  data JSONB NOT NULL,
+  admin_notes TEXT,
+  reviewed_by UUID REFERENCES profiles(id) ON DELETE SET NULL,
+  reviewed_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- Enable RLS on user_proposals
+ALTER TABLE user_proposals ENABLE ROW LEVEL SECURITY;
+
+-- Users can create their own proposals
+CREATE POLICY "Users can create proposals"
+  ON user_proposals
+  FOR INSERT
+  TO authenticated
+  WITH CHECK (auth.uid() = user_id);
+
+-- Users can view their own proposals
+CREATE POLICY "Users can view own proposals"
+  ON user_proposals
+  FOR SELECT
+  TO authenticated
+  USING (auth.uid() = user_id);
+
+-- Admins can view all proposals
+CREATE POLICY "Admins can view all proposals"
+  ON user_proposals
+  FOR SELECT
+  TO authenticated
+  USING (
+    EXISTS (
+      SELECT 1 FROM profiles
+      WHERE profiles.id = auth.uid()
+      AND profiles.is_admin = true
+    )
+  );
+
+-- Admins can update proposals
+CREATE POLICY "Admins can update proposals"
+  ON user_proposals
+  FOR UPDATE
+  TO authenticated
+  USING (
+    EXISTS (
+      SELECT 1 FROM profiles
+      WHERE profiles.id = auth.uid()
+      AND profiles.is_admin = true
+    )
+  )
+  WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM profiles
+      WHERE profiles.id = auth.uid()
+      AND profiles.is_admin = true
+    )
+  );
+
+-- Create indexes for user_proposals
+CREATE INDEX IF NOT EXISTS idx_user_proposals_status ON user_proposals(status);
+CREATE INDEX IF NOT EXISTS idx_user_proposals_user_id ON user_proposals(user_id);
+CREATE INDEX IF NOT EXISTS idx_user_proposals_type ON user_proposals(proposal_type);
+CREATE INDEX IF NOT EXISTS idx_user_proposals_parent_id ON user_proposals(parent_id);
+
+-- Add comments
+COMMENT ON TABLE user_proposals IS 'User-submitted proposals for new resorts, runs, and lifts';
+COMMENT ON COLUMN user_proposals.proposal_type IS 'Type of content: resort, run, or lift';
+COMMENT ON COLUMN user_proposals.parent_id IS 'For runs/lifts, the ski area they belong to';
+COMMENT ON COLUMN user_proposals.status IS 'Review status: pending, approved, or rejected';
+COMMENT ON COLUMN user_proposals.data IS 'JSONB data containing proposal details (name, difficulty, etc.)';
+
+-- ==========================================
 -- SUCCESS MESSAGE
 -- ==========================================
 
@@ -392,5 +473,6 @@ BEGIN
   RAISE NOTICE '✅ Admin logs table created';
   RAISE NOTICE '✅ RLS policies updated for visibility control';
   RAISE NOTICE '✅ Helper functions created';
+  RAISE NOTICE '✅ User proposals system added (v0.3.0)';
   RAISE NOTICE '🎿 Admin dashboard ready to use!';
 END $$;

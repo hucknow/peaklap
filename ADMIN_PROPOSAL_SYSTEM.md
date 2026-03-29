@@ -77,9 +77,9 @@ Each proposal includes:
 
 ## SQL Migration
 
-**File**: `admin_proposal_system_migration.sql`
+**File**: `admin_system_migration.sql` (includes proposals system in v0.3.0 section)
 
-Apply this migration to your hosted database to enable the proposal system.
+The user proposals system has been added to the main admin system migration file. If you've already applied the base admin system migration, you can run just the "USER PROPOSALS SYSTEM (v0.3.0)" section starting at line 384.
 
 ## User Experience
 
