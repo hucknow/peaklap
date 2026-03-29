@@ -38,10 +38,10 @@ export function StatsSection({ profile, selectedResort, showSnowStake = true, pe
     setIsLoading(true);
     
     try {
-      // Build query based on period
+      // Build query based on period - now includes lift logs for vertical calculation
       let logsQuery = supabase
         .from('user_logs')
-        .select('run_id, logged_at, runs(vertical_ft, ski_area_id)')
+        .select('id, run_id, lift_id, log_type, logged_at, runs(vertical_ft, ski_area_id), lifts(vertical_ft, ski_area_id)')
         .eq('user_id', profile.id);
       
       // Filter by date based on period
@@ -77,8 +77,12 @@ export function StatsSection({ profile, selectedResort, showSnowStake = true, pe
       const { data: allRuns } = await runsQuery;
 
       if (logs && allRuns) {
-        const uniqueRunIds = new Set(logs.map(l => l.run_id));
-        const totalVertical = logs.reduce((sum, log) => sum + (log.runs?.vertical_ft || 0), 0);
+        const uniqueRunIds = new Set(logs.filter(l => l.run_id).map(l => l.run_id));
+
+        // NEW: Calculate vertical from LIFT logs only (not run logs)
+        const liftLogs = logs.filter(log => log.log_type === 'lift' && log.lift_id);
+        const totalVertical = liftLogs.reduce((sum, log) => sum + (log.lifts?.vertical_ft || 0), 0);
+
         const completedRuns = uniqueRunIds.size;
         const totalRuns = allRuns.length;
         const completionPercent = totalRuns > 0 ? Math.round((completedRuns / totalRuns) * 100) : 0;

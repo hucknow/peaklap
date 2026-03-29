@@ -344,12 +344,44 @@ export function useRunChecklist(userId, resortId) {
     }
 
     const sessionId = generateSessionId(userId);
+
+    // NEW: Find most recent lift log to link this run to
+    let parentLiftLogId = null;
+    if (isOnline) {
+      try {
+        const { data: recentLiftLogs } = await supabase
+          .from('user_logs')
+          .select('id, logged_at')
+          .eq('user_id', userId)
+          .eq('ski_area_id', resortId)
+          .eq('log_type', 'lift')
+          .order('logged_at', { ascending: false })
+          .limit(1);
+
+        if (recentLiftLogs && recentLiftLogs.length > 0) {
+          // Only link if lift was logged in the last 30 minutes
+          const liftLogTime = new Date(recentLiftLogs[0].logged_at);
+          const now = new Date();
+          const diffMinutes = (now - liftLogTime) / (1000 * 60);
+
+          if (diffMinutes <= 30) {
+            parentLiftLogId = recentLiftLogs[0].id;
+            console.log('Linking run to recent lift log:', parentLiftLogId);
+          }
+        }
+      } catch (err) {
+        console.warn('Could not fetch recent lift logs:', err);
+      }
+    }
+
     const logEntry = {
       user_id: userId,
       run_id: runId,
       ski_area_id: resortId,
       logged_at: new Date().toISOString(),
-      session_id: sessionId
+      session_id: sessionId,
+      parent_log_id: parentLiftLogId,
+      log_type: 'run'
     };
 
     console.log('Attempting to log run:', logEntry);
@@ -365,7 +397,9 @@ export function useRunChecklist(userId, resortId) {
             run_id: logEntry.run_id,
             ski_area_id: logEntry.ski_area_id,
             logged_at: logEntry.logged_at,
-            session_id: logEntry.session_id
+            session_id: logEntry.session_id,
+            parent_log_id: logEntry.parent_log_id,
+            log_type: logEntry.log_type
           })
           .select()
           .single();

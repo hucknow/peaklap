@@ -16,7 +16,7 @@ import { useDaySummary } from '@/lib/hooks';
 import { offlineStorage } from '@/lib/offline';
 import { getNetworkStatus } from '@/lib/platform';
 import { format, parseISO, isToday as checkIsToday, startOfDay, endOfDay } from 'date-fns';
-import { Trash2, Calendar, TrendingUp, Mountain, ChevronRight, Star, ChevronDown, CreditCard as Edit, CreditCard as Edit2, X } from 'lucide-react';
+import { Trash2, Calendar, TrendingUp, Mountain, ChevronRight, Star, ChevronDown, CreditCard as Edit, CreditCard as Edit2, X, GripVertical } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function History() {
@@ -41,6 +41,8 @@ export default function History() {
     snow_condition: '',
     notes: ''
   });
+  const [draggedRunLog, setDraggedRunLog] = useState(null);
+  const [dragOverLiftId, setDragOverLiftId] = useState(null);
 
   // Day summary hook for selected date
   const daySummaryData = useDaySummary(profile?.id, selectedDate || new Date());
@@ -53,9 +55,10 @@ export default function History() {
 
     if (isOnline) {
       // Build query - optionally filter by selected resort
+      // NEW: Include lift data and parent_log_id for hierarchy
       let query = supabase
         .from('user_logs')
-        .select('*, runs(name, difficulty, vertical_ft, zone), ski_areas(name)')
+        .select('*, runs(name, difficulty, vertical_ft, zone), lifts(name, vertical_ft), ski_areas(name), parent_log_id, log_type')
         .eq('user_id', profile.id)
         .order('logged_at', { ascending: false });
 
@@ -75,9 +78,24 @@ export default function History() {
 
       if (data) {
         await offlineStorage.cacheLogs(profile.id, data);
-        // Group by date
+
+        // NEW: Build parent-child hierarchy
+        // First, create a map of all logs by ID
+        const logsById = new Map(data.map(log => [log.id, { ...log, children: [] }]));
+
+        // Then, assign children to their parents
+        const topLevelLogs = [];
+        logsById.forEach(log => {
+          if (log.parent_log_id && logsById.has(log.parent_log_id)) {
+            logsById.get(log.parent_log_id).children.push(log);
+          } else {
+            topLevelLogs.push(log);
+          }
+        });
+
+        // Group by date with hierarchy
         const grouped = {};
-        data.forEach(log => {
+        topLevelLogs.forEach(log => {
           const dateKey = format(new Date(log.logged_at), 'yyyy-MM-dd');
           if (!grouped[dateKey]) {
             grouped[dateKey] = {
@@ -88,7 +106,10 @@ export default function History() {
             };
           }
           grouped[dateKey].logs.push(log);
-          grouped[dateKey].totalVertical += log.runs?.vertical_ft || 0;
+          // NEW: Calculate vertical from LIFT logs only
+          if (log.log_type === 'lift') {
+            grouped[dateKey].totalVertical += log.lifts?.vertical_ft || 0;
+          }
         });
         setGroupedLogs(grouped);
         setIsShowingCached(false);
@@ -329,6 +350,71 @@ export default function History() {
     }
   };
 
+  // Drag-and-drop handlers for reassigning runs to lifts
+  const handleDragStart = (e, runLog) => {
+    if (runLog.log_type !== 'run') return; // Only runs can be dragged
+    setDraggedRunLog(runLog);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDragOver = (e, liftLog) => {
+    e.preventDefault();
+    if (liftLog.log_type === 'lift') {
+      e.dataTransfer.dropEffect = 'move';
+      setDragOverLiftId(liftLog.id);
+    }
+  };
+
+  const handleDragLeave = () => {
+    setDragOverLiftId(null);
+  };
+
+  const handleDrop = async (e, targetLiftLog) => {
+    e.preventDefault();
+    setDragOverLiftId(null);
+
+    if (!draggedRunLog || targetLiftLog.log_type !== 'lift') return;
+    if (draggedRunLog.parent_log_id === targetLiftLog.id) {
+      toast.info('Run is already assigned to this lift');
+      setDraggedRunLog(null);
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('user_logs')
+        .update({ parent_log_id: targetLiftLog.id })
+        .eq('id', draggedRunLog.id);
+
+      if (error) throw error;
+
+      toast.success(`Reassigned "${draggedRunLog.runs?.name}" to "${targetLiftLog.lifts?.name}"`);
+      loadGroupedLogs();
+    } catch (err) {
+      console.error('Error reassigning run:', err);
+      toast.error('Failed to reassign run');
+    } finally {
+      setDraggedRunLog(null);
+    }
+  };
+
+  const handleUnlinkRun = async (runLog) => {
+    try {
+      const { error } = await supabase
+        .from('user_logs')
+        .update({ parent_log_id: null })
+        .eq('id', runLog.id);
+
+      if (error) throw error;
+
+      toast.success('Run unlinked from lift');
+      loadGroupedLogs();
+    } catch (err) {
+      console.error('Error unlinking run:', err);
+      toast.error('Failed to unlink run');
+    }
+  };
+
   // Filter logs based on search and filters
   const filterLogs = (logs) => {
     return logs.filter(log => {
@@ -521,59 +607,176 @@ export default function History() {
                 </div>
               </div>
 
-              {/* Expanded Runs List */}
+              {/* Expanded Logs List - NEW: Hierarchical Display */}
               {isExpanded && (
                 <div className="border-t" style={{ borderColor: 'rgba(255,255,255,0.1)' }}>
-                  {filteredDayLogs.map((log, idx) => (
-                    <div
-                      key={log.id}
-                      className="px-4 py-3 flex items-center justify-between"
-                      style={{
-                        backgroundColor: idx % 2 === 0 ? 'rgba(255,255,255,0.02)' : 'transparent'
-                      }}
-                    >
-                      <div className="flex items-center gap-3 flex-1">
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm text-white" style={{ fontFamily: 'Manrope, sans-serif' }}>
-                            {log.runs?.name || 'Unknown Run'}
-                          </span>
-                          {log.runs?.difficulty && (
-                            <DifficultyBadge difficulty={log.runs.difficulty} region={profile?.difficulty_region} size="sm" />
-                          )}
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <span className="text-xs" style={{ color: 'rgba(255,255,255,0.5)', fontFamily: 'JetBrains Mono, monospace' }}>
-                          {(log.runs?.vertical_ft || 0).toLocaleString()} ft
-                        </span>
-                        {/* Edit/Delete Controls (Edit Mode) */}
-                        {isEditMode && (
-                          <div className="flex items-center gap-1">
-                            <button
-                              onClick={() => handleEditLog(log)}
-                              className="p-1.5 rounded-lg transition-all hover:scale-110"
-                              style={{
-                                backgroundColor: 'rgba(0, 180, 216, 0.1)',
-                                color: '#00B4D8'
-                              }}
-                            >
-                              <Edit2 size={14} />
-                            </button>
-                            <button
-                              onClick={() => handleDeleteSingleLog(log.id, log.runs?.name || 'run')}
-                              className="p-1.5 rounded-lg transition-all hover:scale-110"
-                              style={{
-                                backgroundColor: 'rgba(255, 23, 68, 0.1)',
-                                color: '#FF1744'
-                              }}
-                            >
-                              <Trash2 size={14} />
-                            </button>
+                  {filteredDayLogs.map((log, idx) => {
+                    const isLift = log.log_type === 'lift';
+                    const hasChildren = log.children && log.children.length > 0;
+
+                    return (
+                      <div key={log.id}>
+                        {/* Parent Log (Lift or Orphaned Run) */}
+                        <div
+                          className="px-4 py-3 flex items-center justify-between"
+                          draggable={!isLift && isEditMode}
+                          onDragStart={(e) => handleDragStart(e, log)}
+                          onDragOver={(e) => isLift && handleDragOver(e, log)}
+                          onDragLeave={handleDragLeave}
+                          onDrop={(e) => isLift && handleDrop(e, log)}
+                          style={{
+                            backgroundColor: isLift
+                              ? (dragOverLiftId === log.id ? 'rgba(0, 180, 216, 0.15)' : 'rgba(0, 180, 216, 0.05)')
+                              : (idx % 2 === 0 ? 'rgba(255,255,255,0.02)' : 'transparent'),
+                            borderLeft: isLift ? '3px solid #00B4D8' : 'none',
+                            paddingLeft: isLift ? '13px' : '16px',
+                            cursor: !isLift && isEditMode ? 'grab' : 'default',
+                            transition: 'background-color 0.2s ease',
+                            border: dragOverLiftId === log.id ? '2px dashed #00B4D8' : undefined
+                          }}
+                        >
+                          <div className="flex items-center gap-3 flex-1">
+                            <div className="flex items-center gap-2">
+                              {!isLift && isEditMode && (
+                                <GripVertical size={16} style={{ color: 'rgba(255,255,255,0.3)', cursor: 'grab' }} />
+                              )}
+                              {isLift && (
+                                <span className="text-xs px-2 py-0.5 rounded-full" style={{
+                                  backgroundColor: 'rgba(0, 180, 216, 0.2)',
+                                  color: '#00B4D8',
+                                  fontFamily: 'JetBrains Mono, monospace',
+                                  fontWeight: 600
+                                }}>
+                                  LIFT
+                                </span>
+                              )}
+                              <span className={`text-sm ${isLift ? 'font-semibold' : ''}`} style={{
+                                color: isLift ? '#00B4D8' : '#FFFFFF',
+                                fontFamily: 'Manrope, sans-serif'
+                              }}>
+                                {isLift ? (log.lifts?.name || 'Unknown Lift') : (log.runs?.name || 'Unknown Run')}
+                              </span>
+                              {!isLift && log.runs?.difficulty && (
+                                <DifficultyBadge difficulty={log.runs.difficulty} region={profile?.difficulty_region} size="sm" />
+                              )}
+                              {hasChildren && (
+                                <span className="text-xs" style={{
+                                  color: 'rgba(255,255,255,0.5)',
+                                  fontFamily: 'JetBrains Mono, monospace'
+                                }}>
+                                  • {log.children.length} run{log.children.length !== 1 ? 's' : ''}
+                                </span>
+                              )}
+                            </div>
                           </div>
-                        )}
+                          <div className="flex items-center gap-3">
+                            <span className="text-xs font-semibold" style={{
+                              color: isLift ? '#00B4D8' : 'rgba(255,255,255,0.5)',
+                              fontFamily: 'JetBrains Mono, monospace'
+                            }}>
+                              {isLift
+                                ? `+${(log.lifts?.vertical_ft || 0).toLocaleString()} ft`
+                                : `${(log.runs?.vertical_ft || 0).toLocaleString()} ft`
+                              }
+                            </span>
+                            {/* Edit/Delete Controls (Edit Mode) */}
+                            {isEditMode && (
+                              <div className="flex items-center gap-1">
+                                <button
+                                  onClick={() => handleEditLog(log)}
+                                  className="p-1.5 rounded-lg transition-all hover:scale-110"
+                                  style={{
+                                    backgroundColor: 'rgba(0, 180, 216, 0.1)',
+                                    color: '#00B4D8'
+                                  }}
+                                >
+                                  <Edit2 size={14} />
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteSingleLog(log.id, isLift ? (log.lifts?.name || 'lift') : (log.runs?.name || 'run'))}
+                                  className="p-1.5 rounded-lg transition-all hover:scale-110"
+                                  style={{
+                                    backgroundColor: 'rgba(255, 23, 68, 0.1)',
+                                    color: '#FF1744'
+                                  }}
+                                >
+                                  <Trash2 size={14} />
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Child Runs (nested under lift) */}
+                        {hasChildren && log.children.map((childLog) => (
+                          <div
+                            key={childLog.id}
+                            className="px-4 py-2.5 flex items-center justify-between"
+                            draggable={isEditMode}
+                            onDragStart={(e) => handleDragStart(e, childLog)}
+                            style={{
+                              backgroundColor: 'rgba(255,255,255,0.02)',
+                              borderLeft: '3px solid rgba(0, 180, 216, 0.3)',
+                              marginLeft: '20px',
+                              paddingLeft: '20px',
+                              cursor: isEditMode ? 'grab' : 'default'
+                            }}
+                          >
+                            <div className="flex items-center gap-3 flex-1">
+                              <div className="flex items-center gap-2">
+                                {isEditMode && (
+                                  <GripVertical size={14} style={{ color: 'rgba(255,255,255,0.25)', cursor: 'grab' }} />
+                                )}
+                                <span className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>└</span>
+                                <span className="text-sm" style={{
+                                  color: 'rgba(255,255,255,0.8)',
+                                  fontFamily: 'Manrope, sans-serif'
+                                }}>
+                                  {childLog.runs?.name || 'Unknown Run'}
+                                </span>
+                                {childLog.runs?.difficulty && (
+                                  <DifficultyBadge difficulty={childLog.runs.difficulty} region={profile?.difficulty_region} size="sm" />
+                                )}
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-3">
+                              <span className="text-xs" style={{
+                                color: 'rgba(255,255,255,0.4)',
+                                fontFamily: 'JetBrains Mono, monospace'
+                              }}>
+                                {(childLog.runs?.vertical_ft || 0).toLocaleString()} ft
+                              </span>
+                              {/* Edit/Delete Controls for child runs */}
+                              {isEditMode && (
+                                <div className="flex items-center gap-1">
+                                  <button
+                                    onClick={() => handleEditLog(childLog)}
+                                    className="p-1.5 rounded-lg transition-all hover:scale-110"
+                                    style={{
+                                      backgroundColor: 'rgba(0, 180, 216, 0.1)',
+                                      color: '#00B4D8'
+                                    }}
+                                  >
+                                    <Edit2 size={14} />
+                                  </button>
+                                  <button
+                                    onClick={() => handleDeleteSingleLog(childLog.id, childLog.runs?.name || 'run')}
+                                    className="p-1.5 rounded-lg transition-all hover:scale-110"
+                                    style={{
+                                      backgroundColor: 'rgba(255, 23, 68, 0.1)',
+                                      color: '#FF1744'
+                                    }}
+                                  >
+                                    <Trash2 size={14} />
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        ))}
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
 
                   {/* View Day Summary Button */}
                   <div
