@@ -55,6 +55,7 @@ export default function Settings() {
   // Goals state
   const [goalDays, setGoalDays] = useState(profile?.season_goal_days || 0);
   const [goalVertical, setGoalVertical] = useState(profile?.season_goal_vertical_ft || 0);
+  const [dailyRunGoal, setDailyRunGoal] = useState(profile?.daily_run_goal || 3);
   const [region, setRegion] = useState(profile?.difficulty_region || 'NA');
   
   // UI state
@@ -80,6 +81,7 @@ export default function Settings() {
       setDifficultyPreference(profile.difficulty_preference || '');
       setGoalDays(profile.season_goal_days || 0);
       setGoalVertical(profile.season_goal_vertical_ft || 0);
+      setDailyRunGoal(profile.daily_run_goal || 3);
       setRegion(profile.difficulty_region || 'NA');
       
       // Parse terrain styles (stored as comma-separated or single value)
@@ -267,6 +269,7 @@ export default function Settings() {
       primary_resort_id: primaryResort?.id || null,
       season_goal_days: goalDays,
       season_goal_vertical_ft: goalVertical,
+      daily_run_goal: dailyRunGoal,
       difficulty_region: region,
     });
 
@@ -543,6 +546,44 @@ export default function Settings() {
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium mb-3 text-white" style={{ fontFamily: 'Manrope, sans-serif' }}>
+                  Daily Run Goal
+                </label>
+                <div className="flex items-center justify-center gap-4">
+                  <button
+                    onClick={() => setDailyRunGoal(Math.max(1, dailyRunGoal - 1))}
+                    className="p-3 rounded-full transition-all active:scale-95 hover:bg-white/20"
+                    style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}
+                  >
+                    <Minus size={24} style={{ color: 'white' }} />
+                  </button>
+                  <input
+                    type="number"
+                    value={dailyRunGoal}
+                    onChange={(e) => setDailyRunGoal(Math.max(1, Math.min(100, parseInt(e.target.value) || 1)))}
+                    className="w-24 text-center text-3xl font-bold bg-transparent border-b-2 focus:outline-none focus:border-[#00B4D8] transition-colors"
+                    style={{
+                      fontFamily: 'JetBrains Mono, monospace',
+                      color: 'white',
+                      borderColor: 'rgba(255,255,255,0.2)'
+                    }}
+                    min="1"
+                    max="100"
+                  />
+                  <button
+                    onClick={() => setDailyRunGoal(Math.min(100, dailyRunGoal + 1))}
+                    className="p-3 rounded-full transition-all active:scale-95 hover:bg-white/20"
+                    style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}
+                  >
+                    <Plus size={24} style={{ color: 'white' }} />
+                  </button>
+                </div>
+                <p className="text-xs mt-2 text-center" style={{ color: 'rgba(255,255,255,0.5)' }}>
+                  Target runs per day on the mountain
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-3 text-white" style={{ fontFamily: 'Manrope, sans-serif' }}>
                   Days This Season
                 </label>
                 <div className="flex items-center justify-center gap-4">
@@ -565,7 +606,7 @@ export default function Settings() {
                       }
                     }}
                     className="w-24 text-center text-3xl font-bold bg-transparent border-b-2 focus:outline-none focus:border-[#00B4D8] transition-colors"
-                    style={{ 
+                    style={{
                       fontFamily: 'JetBrains Mono, monospace',
                       color: 'white',
                       borderColor: 'rgba(255,255,255,0.2)'

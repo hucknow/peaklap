@@ -1,10 +1,10 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { GlassCard } from '@/components/GlassCard';
 import { SnowStakeCompact } from '@/components/SnowStake';
 import { supabase } from '@/lib/supabase';
 import { MapPin, TrendingUp, Mountain } from 'lucide-react';
-import { format, startOfDay, endOfDay } from 'date-fns';
+import { format, startOfDay, endOfDay, parseISO } from 'date-fns';
 
 export function StatsSection({ profile, selectedResort, showSnowStake = true, period: controlledPeriod, onPeriodChange }) {
   const navigate = useNavigate();
@@ -20,12 +20,15 @@ export function StatsSection({ profile, selectedResort, showSnowStake = true, pe
     }
   };
   
-  const [stats, setStats] = useState({ 
-    daysLogged: 0, 
-    verticalLogged: 0, 
-    completionPercent: 0, 
-    totalRuns: 0, 
-    completedRuns: 0 
+  const [stats, setStats] = useState({
+    daysLogged: 0,
+    verticalLogged: 0,
+    completionPercent: 0,
+    totalRuns: 0,
+    completedRuns: 0,
+    runsToday: 0,
+    uniqueDaysThisSeason: 0,
+    allLogs: [] // Store all logs for lifetime calculations
   });
   const [isLoading, setIsLoading] = useState(true);
 
@@ -79,13 +82,50 @@ export function StatsSection({ profile, selectedResort, showSnowStake = true, pe
         const completedRuns = uniqueRunIds.size;
         const totalRuns = allRuns.length;
         const completionPercent = totalRuns > 0 ? Math.round((completedRuns / totalRuns) * 100) : 0;
-        
+
+        // Calculate runs today
+        const today = new Date();
+        const startOfToday = startOfDay(today);
+        const endOfToday = endOfDay(today);
+        const runsToday = logs.filter(log => {
+          const logDate = parseISO(log.logged_at);
+          return logDate >= startOfToday && logDate <= endOfToday;
+        }).length;
+
+        // Calculate unique days this season
+        const now = new Date();
+        const currentYear = now.getFullYear();
+        const currentMonth = now.getMonth();
+        const seasonStartYear = currentMonth < 10 ? currentYear - 1 : currentYear;
+        const seasonStart = new Date(seasonStartYear, 10, 1);
+
+        const seasonLogs = logs.filter(log => parseISO(log.logged_at) >= seasonStart);
+        const uniqueDays = new Set(
+          seasonLogs.map(log => format(parseISO(log.logged_at), 'yyyy-MM-dd'))
+        );
+        const uniqueDaysThisSeason = uniqueDays.size;
+
+        // Fetch all logs for lifetime calculation (not filtered by period)
+        let allLogsQuery = supabase
+          .from('user_logs')
+          .select('logged_at')
+          .eq('user_id', profile.id);
+
+        if (selectedResort?.id) {
+          allLogsQuery = allLogsQuery.eq('ski_area_id', selectedResort.id);
+        }
+
+        const { data: allLogsData } = await allLogsQuery;
+
         setStats({
           daysLogged: logs.length,
           verticalLogged: totalVertical,
           completionPercent,
           totalRuns,
-          completedRuns
+          completedRuns,
+          runsToday,
+          uniqueDaysThisSeason,
+          allLogs: allLogsData || []
         });
       }
     } catch (error) {
@@ -98,6 +138,33 @@ export function StatsSection({ profile, selectedResort, showSnowStake = true, pe
   useEffect(() => {
     loadStats();
   }, [loadStats]);
+
+  // Calculate average days per season for lifetime view
+  const avgDaysPerSeason = useMemo(() => {
+    if (!stats.allLogs || stats.allLogs.length === 0) return 0;
+
+    // Group logs by season and count unique days per season
+    const seasonDays = {};
+    stats.allLogs.forEach(log => {
+      const logDate = parseISO(log.logged_at);
+      const year = logDate.getFullYear();
+      const month = logDate.getMonth();
+      const seasonYear = month < 10 ? year - 1 : year; // Season starts Nov 1
+      const dateKey = format(logDate, 'yyyy-MM-dd');
+
+      if (!seasonDays[seasonYear]) {
+        seasonDays[seasonYear] = new Set();
+      }
+      seasonDays[seasonYear].add(dateKey);
+    });
+
+    // Calculate average
+    const seasons = Object.keys(seasonDays);
+    if (seasons.length === 0) return 0;
+
+    const totalDays = seasons.reduce((sum, season) => sum + seasonDays[season].size, 0);
+    return totalDays / seasons.length;
+  }, [stats.allLogs]);
 
   const periodLabels = {
     today: 'Today',
@@ -141,6 +208,11 @@ export function StatsSection({ profile, selectedResort, showSnowStake = true, pe
               goalDays={profile?.season_goal_days || 0}
               verticalLogged={stats.verticalLogged}
               goalVertical={profile?.season_goal_vertical_ft || 0}
+              filter={period}
+              dailyRunGoal={profile?.daily_run_goal || 3}
+              runsToday={stats.runsToday}
+              uniqueDaysThisSeason={stats.uniqueDaysThisSeason}
+              avgDaysPerSeason={avgDaysPerSeason}
             />
           </div>
         )}

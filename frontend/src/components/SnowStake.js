@@ -1,9 +1,54 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 
-export function SnowStake({ daysLogged = 0, goalDays = 0, verticalLogged = 0, goalVertical = 0 }) {
+export function SnowStake({
+  daysLogged = 0,
+  goalDays = 0,
+  verticalLogged = 0,
+  goalVertical = 0,
+  filter = 'season', // 'today' | 'season' | 'lifetime'
+  dailyRunGoal = 3,
+  runsToday = 0,
+  uniqueDaysThisSeason = 0,
+  avgDaysPerSeason = 0
+}) {
   const [animatedPercentage, setAnimatedPercentage] = useState(0);
-  const targetPercentage = goalDays > 0 ? Math.min((daysLogged / goalDays) * 100, 100) : 0;
-  const isGoalCrushed = targetPercentage >= 100;
+
+  // Calculate stats based on filter using useMemo for optimization
+  const { currentValue, targetValue, displayText, isGoalCrushed } = useMemo(() => {
+    let current = 0;
+    let target = 0;
+    let text = '';
+    let goalReached = false;
+
+    if (filter === 'today') {
+      // Today: count runs logged today vs daily run goal
+      current = runsToday;
+      target = dailyRunGoal;
+      text = `${current} Run${current !== 1 ? 's' : ''} Today`;
+      goalReached = target > 0 && current >= target;
+    } else if (filter === 'season') {
+      // Season: count unique days with logs vs season days goal
+      current = uniqueDaysThisSeason;
+      target = goalDays;
+      text = `${current} Day${current !== 1 ? 's' : ''} this Season`;
+      goalReached = target > 0 && current >= target;
+    } else if (filter === 'lifetime') {
+      // Lifetime: average days per season vs season days goal
+      current = avgDaysPerSeason;
+      target = goalDays;
+      text = `Avg ${current.toFixed(1)} Days / Season`;
+      goalReached = target > 0 && current >= target;
+    }
+
+    return {
+      currentValue: current,
+      targetValue: target,
+      displayText: text,
+      isGoalCrushed: goalReached
+    };
+  }, [filter, runsToday, dailyRunGoal, uniqueDaysThisSeason, goalDays, avgDaysPerSeason]);
+
+  const targetPercentage = targetValue > 0 ? Math.min((currentValue / targetValue) * 100, 100) : 0;
   
   // Animate fill on load
   useEffect(() => {
@@ -14,7 +59,7 @@ export function SnowStake({ daysLogged = 0, goalDays = 0, verticalLogged = 0, go
   }, [targetPercentage]);
 
   const getMessage = () => {
-    if (goalDays === 0) return 'Set your season goals to unlock the Snow Stake';
+    if (targetValue === 0) return 'Set your goals to unlock the Snow Stake';
     if (targetPercentage === 0) return 'Get out there — season starts now';
     if (isGoalCrushed) return 'Goal Crushed 🏔️';
     return `${Math.round(targetPercentage)}% to goal`;
@@ -151,28 +196,32 @@ export function SnowStake({ daysLogged = 0, goalDays = 0, verticalLogged = 0, go
         <div className="flex items-center justify-center gap-4">
           <div className="text-center">
             <p className="text-lg font-bold" style={{ fontFamily: 'JetBrains Mono, monospace', color: '#00B4D8' }}>
-              {daysLogged}
+              {filter === 'lifetime' ? currentValue.toFixed(1) : currentValue}
             </p>
-            <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.5)' }}>logged</p>
+            <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.5)' }}>current</p>
           </div>
           <div className="text-2xl" style={{ color: 'rgba(255,255,255,0.3)' }}>/</div>
           <div className="text-center">
             <p className="text-lg font-bold" style={{ fontFamily: 'JetBrains Mono, monospace', color: 'rgba(255,255,255,0.8)' }}>
-              {goalDays}
+              {targetValue}
             </p>
-            <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.5)' }}>goal days</p>
+            <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.5)' }}>goal</p>
           </div>
         </div>
-        
+
+        <p className="text-sm font-medium" style={{ fontFamily: 'JetBrains Mono, monospace', color: 'rgba(255,255,255,0.7)' }}>
+          {displayText}
+        </p>
+
         <p className="text-sm" style={{ fontFamily: 'JetBrains Mono, monospace', color: 'rgba(255,255,255,0.6)' }}>
           {verticalLogged.toLocaleString()} / {goalVertical.toLocaleString()} ft
         </p>
-        
-        <p 
+
+        <p
           className="text-sm font-semibold pt-1 transition-colors duration-500"
-          style={{ 
-            fontFamily: 'Manrope, sans-serif', 
-            color: isGoalCrushed ? '#FFD700' : goalDays === 0 ? 'rgba(255,255,255,0.5)' : '#00B4D8',
+          style={{
+            fontFamily: 'Manrope, sans-serif',
+            color: isGoalCrushed ? '#FFD700' : targetValue === 0 ? 'rgba(255,255,255,0.5)' : '#00B4D8',
           }}
         >
           {getMessage()}
@@ -195,10 +244,52 @@ export function SnowStake({ daysLogged = 0, goalDays = 0, verticalLogged = 0, go
 }
 
 // Compact version for side-by-side layout
-export function SnowStakeCompact({ daysLogged = 0, goalDays = 0, verticalLogged = 0, goalVertical = 0 }) {
+export function SnowStakeCompact({
+  daysLogged = 0,
+  goalDays = 0,
+  verticalLogged = 0,
+  goalVertical = 0,
+  filter = 'season',
+  dailyRunGoal = 3,
+  runsToday = 0,
+  uniqueDaysThisSeason = 0,
+  avgDaysPerSeason = 0
+}) {
   const [animatedPercentage, setAnimatedPercentage] = useState(0);
-  const targetPercentage = goalDays > 0 ? Math.min((daysLogged / goalDays) * 100, 100) : 0;
-  const isGoalCrushed = targetPercentage >= 100;
+
+  // Calculate stats based on filter using useMemo for optimization
+  const { currentValue, targetValue, displayText, isGoalCrushed } = useMemo(() => {
+    let current = 0;
+    let target = 0;
+    let text = '';
+    let goalReached = false;
+
+    if (filter === 'today') {
+      current = runsToday;
+      target = dailyRunGoal;
+      text = `${current} Run${current !== 1 ? 's' : ''}`;
+      goalReached = target > 0 && current >= target;
+    } else if (filter === 'season') {
+      current = uniqueDaysThisSeason;
+      target = goalDays;
+      text = `${current} Day${current !== 1 ? 's' : ''}`;
+      goalReached = target > 0 && current >= target;
+    } else if (filter === 'lifetime') {
+      current = avgDaysPerSeason;
+      target = goalDays;
+      text = `Avg ${current.toFixed(1)}/Season`;
+      goalReached = target > 0 && current >= target;
+    }
+
+    return {
+      currentValue: current,
+      targetValue: target,
+      displayText: text,
+      isGoalCrushed: goalReached
+    };
+  }, [filter, runsToday, dailyRunGoal, uniqueDaysThisSeason, goalDays, avgDaysPerSeason]);
+
+  const targetPercentage = targetValue > 0 ? Math.min((currentValue / targetValue) * 100, 100) : 0;
   
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -208,7 +299,7 @@ export function SnowStakeCompact({ daysLogged = 0, goalDays = 0, verticalLogged 
   }, [targetPercentage]);
 
   const getMessage = () => {
-    if (goalDays === 0) return 'Set goals';
+    if (targetValue === 0) return 'Set goals';
     if (isGoalCrushed) return 'Crushed! 🏔️';
     return `${Math.round(targetPercentage)}%`;
   };
@@ -315,14 +406,14 @@ export function SnowStakeCompact({ daysLogged = 0, goalDays = 0, verticalLogged 
       {/* Compact Stats */}
       <div className="text-center">
         <p className="text-sm font-bold" style={{ fontFamily: 'JetBrains Mono, monospace', color: '#00B4D8' }}>
-          {daysLogged}/{goalDays}
+          {filter === 'lifetime' ? currentValue.toFixed(1) : currentValue}/{targetValue}
         </p>
-        <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.5)' }}>days</p>
-        <p 
+        <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.5)' }}>{displayText}</p>
+        <p
           className="text-xs font-semibold mt-1"
-          style={{ 
-            fontFamily: 'Manrope, sans-serif', 
-            color: isGoalCrushed ? '#FFD700' : goalDays === 0 ? 'rgba(255,255,255,0.4)' : '#00B4D8',
+          style={{
+            fontFamily: 'Manrope, sans-serif',
+            color: isGoalCrushed ? '#FFD700' : targetValue === 0 ? 'rgba(255,255,255,0.4)' : '#00B4D8',
           }}
         >
           {getMessage()}
