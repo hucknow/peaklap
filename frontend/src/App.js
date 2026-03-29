@@ -15,6 +15,10 @@ import Settings from '@/pages/Settings';
 import Subscription from '@/pages/Subscription';
 import Terms from '@/pages/Terms';
 import AdminResortLoader from '@/pages/AdminResortLoader';
+import AdminDashboard from '@/pages/AdminDashboard';
+import BulkLoadResorts from '@/pages/BulkLoadResorts';
+import ManageResorts from '@/pages/ManageResorts';
+import EditResort from '@/pages/EditResort';
 import '@/App.css';
 
 // Loading spinner component
@@ -102,7 +106,15 @@ function AppRoutes() {
       }
 
       {/* Admin routes */}
+      <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
+      }
       <Route path="/admin/resort-loader" element={<ProtectedRoute><AdminResortLoader /></ProtectedRoute>} />
+      }
+      <Route path="/admin/bulk-load" element={<ProtectedRoute><BulkLoadResorts /></ProtectedRoute>} />
+      }
+      <Route path="/admin/manage-resorts" element={<ProtectedRoute><ManageResorts /></ProtectedRoute>} />
+      }
+      <Route path="/admin/edit-resort/:id" element={<ProtectedRoute><EditResort /></ProtectedRoute>} />
       }
 
       {/* Public legal pages */}

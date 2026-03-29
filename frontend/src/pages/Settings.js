@@ -135,12 +135,15 @@ export default function Settings() {
 
   const loadResorts = useCallback(async () => {
     if (resortsLoadedRef.current) return;
-    
+
     const { data } = await supabase
       .from('ski_areas')
       .select('*')
+      .eq('is_published', true)
+      .eq('is_active', true)
+      .order('display_order')
       .order('name');
-    
+
     if (data) {
       setResorts(data);
       resortsLoadedRef.current = true;
@@ -288,7 +291,11 @@ export default function Settings() {
     }
 
     longPressTimerRef.current = setTimeout(() => {
-      navigate('/admin/resort-loader');
+      if (profile?.is_admin) {
+        navigate('/admin');
+      } else {
+        navigate('/admin/resort-loader');
+      }
     }, 3000);
   };
 

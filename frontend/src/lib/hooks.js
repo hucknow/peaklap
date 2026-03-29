@@ -53,8 +53,11 @@ export function useResortDetection(userId) {
         const { data } = await supabase
           .from('ski_areas')
           .select('*')
+          .eq('is_published', true)
+          .eq('is_active', true)
+          .order('display_order')
           .order('name');
-        
+
         if (data) {
           setAllResorts(data);
           resortsLoadedRef.current = true;

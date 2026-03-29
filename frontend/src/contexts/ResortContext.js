@@ -49,6 +49,9 @@ export function ResortProvider({ children }) {
         const { data, error } = await supabase
           .from('ski_areas')
           .select('*')
+          .eq('is_published', true)
+          .eq('is_active', true)
+          .order('display_order')
           .order('name');
 
         if (!error && data) {

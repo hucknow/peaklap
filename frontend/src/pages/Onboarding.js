@@ -36,8 +36,15 @@ export default function Onboarding() {
   // Load resorts
   const loadResorts = useCallback(async () => {
     if (resortsLoadedRef.current) return;
-    
-    const { data } = await supabase.from('ski_areas').select('*').order('name');
+
+    const { data } = await supabase
+      .from('ski_areas')
+      .select('*')
+      .eq('is_published', true)
+      .eq('is_active', true)
+      .order('display_order')
+      .order('name');
+
     if (data) {
       setResorts(data);
       resortsLoadedRef.current = true;
