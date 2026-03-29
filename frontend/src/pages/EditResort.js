@@ -199,12 +199,12 @@ export default function EditResort() {
 
         <Card className="mb-6">
           <CardHeader>
-            <CardTitle>Edit Resort: {resort?.name}</CardTitle>
+            <CardTitle className="text-slate-900">Edit Resort: {resort?.name}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium mb-2">Resort Name</label>
+                <label className="block text-sm font-medium mb-2 text-slate-900">Resort Name</label>
                 <Input
                   value={name}
                   onChange={(e) => setName(e.target.value)}
@@ -213,7 +213,7 @@ export default function EditResort() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">Country</label>
+                <label className="block text-sm font-medium mb-2 text-slate-900">Country</label>
                 <Input
                   value={country}
                   onChange={(e) => setCountry(e.target.value)}
@@ -222,7 +222,7 @@ export default function EditResort() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">Region</label>
+                <label className="block text-sm font-medium mb-2 text-slate-900">Region</label>
                 <Input
                   value={region}
                   onChange={(e) => setRegion(e.target.value)}
@@ -231,7 +231,7 @@ export default function EditResort() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">Website</label>
+                <label className="block text-sm font-medium mb-2 text-slate-900">Website</label>
                 <Input
                   type="url"
                   value={website}
@@ -241,7 +241,7 @@ export default function EditResort() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">Base Elevation (m)</label>
+                <label className="block text-sm font-medium mb-2 text-slate-900">Base Elevation (m)</label>
                 <Input
                   type="number"
                   value={elevationBase}
@@ -251,7 +251,7 @@ export default function EditResort() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">Summit Elevation (m)</label>
+                <label className="block text-sm font-medium mb-2 text-slate-900">Summit Elevation (m)</label>
                 <Input
                   type="number"
                   value={elevationSummit}
@@ -261,7 +261,7 @@ export default function EditResort() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">Vertical (m)</label>
+                <label className="block text-sm font-medium mb-2 text-slate-900">Vertical (m)</label>
                 <Input
                   type="number"
                   value={verticalCalc}
@@ -272,11 +272,11 @@ export default function EditResort() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">Operating Status</label>
+                <label className="block text-sm font-medium mb-2 text-slate-900">Operating Status</label>
                 <select
                   value={operatingStatus}
                   onChange={(e) => setOperatingStatus(e.target.value)}
-                  className="w-full px-3 py-2 border rounded-md"
+                  className="w-full px-3 py-2 border rounded-md bg-white text-slate-900"
                 >
                   <option value="open">Open</option>
                   <option value="closed">Closed</option>
@@ -285,7 +285,7 @@ export default function EditResort() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">Display Order</label>
+                <label className="block text-sm font-medium mb-2 text-slate-900">Display Order</label>
                 <Input
                   type="number"
                   value={displayOrder}
@@ -296,7 +296,7 @@ export default function EditResort() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">Trail Map URL</label>
+                <label className="block text-sm font-medium mb-2 text-slate-900">Trail Map URL</label>
                 <Input
                   type="url"
                   value={mapUrl}
@@ -308,7 +308,7 @@ export default function EditResort() {
 
             <div className="flex items-center justify-between p-4 border rounded-lg">
               <div>
-                <p className="font-medium">Published</p>
+                <p className="font-medium text-slate-900">Published</p>
                 <p className="text-sm text-slate-600">
                   {isPublished ? 'Visible to all users' : 'Hidden from users'}
                 </p>
@@ -323,27 +323,27 @@ export default function EditResort() {
 
         <Card className="mb-6">
           <CardHeader>
-            <CardTitle>Read-Only Information</CardTitle>
+            <CardTitle className="text-slate-900">Read-Only Information</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium mb-1">OSM ID</label>
+                <label className="block text-sm font-medium mb-1 text-slate-900">OSM ID</label>
                 <p className="text-sm text-slate-600">{resort?.osm_id || 'N/A'}</p>
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1">Source</label>
+                <label className="block text-sm font-medium mb-1 text-slate-900">Source</label>
                 <Badge className="mt-1">{resort?.source || 'manual'}</Badge>
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1">Load Status</label>
+                <label className="block text-sm font-medium mb-1 text-slate-900">Load Status</label>
                 <Badge className="mt-1">{resort?.load_status || 'unknown'}</Badge>
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1">Last Synced</label>
+                <label className="block text-sm font-medium mb-1 text-slate-900">Last Synced</label>
                 <p className="text-sm text-slate-600">
                   {resort?.last_synced_at
                     ? new Date(resort.last_synced_at).toLocaleString()
@@ -357,28 +357,28 @@ export default function EditResort() {
         {stats && (
           <Card className="mb-6">
             <CardHeader>
-              <CardTitle>Statistics</CardTitle>
+              <CardTitle className="text-slate-900">Statistics</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <h4 className="font-medium mb-2">Runs by Difficulty</h4>
+                <h4 className="font-medium mb-2 text-slate-900">Runs by Difficulty</h4>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                   {Object.entries(stats.difficultyStats).map(([diff, count]) => (
                     <div key={diff} className="flex justify-between p-2 bg-slate-50 rounded">
-                      <span className="capitalize text-sm">{diff}</span>
-                      <span className="font-semibold text-sm">{count}</span>
+                      <span className="capitalize text-sm text-slate-700">{diff}</span>
+                      <span className="font-semibold text-sm text-slate-900">{count}</span>
                     </div>
                   ))}
                 </div>
               </div>
 
               <div>
-                <h4 className="font-medium mb-2">Lifts by Type</h4>
+                <h4 className="font-medium mb-2 text-slate-900">Lifts by Type</h4>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                   {Object.entries(stats.liftTypeStats).map(([type, count]) => (
                     <div key={type} className="flex justify-between p-2 bg-slate-50 rounded">
-                      <span className="capitalize text-sm">{type.replace('_', ' ')}</span>
-                      <span className="font-semibold text-sm">{count}</span>
+                      <span className="capitalize text-sm text-slate-700">{type.replace('_', ' ')}</span>
+                      <span className="font-semibold text-sm text-slate-900">{count}</span>
                     </div>
                   ))}
                 </div>

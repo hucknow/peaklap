@@ -220,8 +220,8 @@ export default function ManageResorts() {
 
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Mountain className="h-6 w-6" />
+            <CardTitle className="flex items-center gap-2 text-slate-900">
+              <Mountain className="h-6 w-6 text-slate-900" />
               Manage Resorts
             </CardTitle>
           </CardHeader>
@@ -239,7 +239,7 @@ export default function ManageResorts() {
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className="px-3 py-2 border rounded-md"
+                className="px-3 py-2 border rounded-md bg-white text-slate-900"
               >
                 <option value="name">Sort: Name A-Z</option>
                 <option value="country">Sort: Country</option>
@@ -249,7 +249,7 @@ export default function ManageResorts() {
               <select
                 value={filterBy}
                 onChange={(e) => setFilterBy(e.target.value)}
-                className="px-3 py-2 border rounded-md"
+                className="px-3 py-2 border rounded-md bg-white text-slate-900"
               >
                 <option value="all">All Resorts</option>
                 <option value="published">Published Only</option>
@@ -275,7 +275,7 @@ export default function ManageResorts() {
                   >
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
-                        <h3 className="font-semibold">{resort.name}</h3>
+                        <h3 className="font-semibold text-slate-900">{resort.name}</h3>
                         <Badge className={getSourceBadge(resort.source)}>
                           {resort.source || 'manual'}
                         </Badge>

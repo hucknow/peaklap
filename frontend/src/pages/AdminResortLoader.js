@@ -224,21 +224,22 @@ export default function AdminResortLoader() {
           <CardHeader>
             <div className="flex items-center gap-2">
               <Mountain className="h-6 w-6 text-blue-600" />
-              <CardTitle>Admin: Load Ski Resort</CardTitle>
+              <CardTitle className="text-slate-900">Admin: Load Ski Resort</CardTitle>
             </div>
-            <CardDescription>
+            <CardDescription className="text-slate-600">
               Load ski area data from OpenSkiMap using an OSM ID
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium">OSM ID</label>
+              <label className="text-sm font-medium text-slate-900">OSM ID</label>
               <Input
                 type="number"
                 placeholder="e.g., 123456"
                 value={osmId}
                 onChange={(e) => setOsmId(e.target.value)}
                 disabled={loading}
+                className="text-slate-900"
               />
               <p className="text-xs text-slate-500">
                 Find OSM IDs at <a
@@ -294,8 +295,8 @@ export default function AdminResortLoader() {
               </Alert>
             )}
 
-            <div className="pt-4 border-t text-xs text-slate-500">
-              <p><strong>How to use:</strong></p>
+            <div className="pt-4 border-t text-xs text-slate-600">
+              <p className="text-slate-900"><strong>How to use:</strong></p>
               <ol className="mt-2 ml-4 list-decimal space-y-1">
                 <li>Find a ski area on openskidata.org</li>
                 <li>Note the OSM ID from the URL or details</li>

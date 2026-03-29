@@ -314,8 +314,8 @@ export default function BulkLoadResorts() {
 
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Mountain className="h-6 w-6" />
+            <CardTitle className="flex items-center gap-2 text-slate-900">
+              <Mountain className="h-6 w-6 text-slate-900" />
               Bulk Load from OpenSkiData
             </CardTitle>
           </CardHeader>
@@ -347,7 +347,7 @@ export default function BulkLoadResorts() {
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="font-semibold">Found {searchResults.length} resorts</h3>
+                    <h3 className="font-semibold text-slate-900">Found {searchResults.length} resorts</h3>
                     <p className="text-sm text-slate-600">{selectedResorts.size} selected</p>
                   </div>
                   <div className="flex gap-2">
@@ -381,7 +381,7 @@ export default function BulkLoadResorts() {
                           disabled={alreadyLoaded}
                         />
                         <div className="flex-1">
-                          <div className="font-medium">{props.name || 'Unknown Resort'}</div>
+                          <div className="font-medium text-slate-900">{props.name || 'Unknown Resort'}</div>
                           <div className="text-sm text-slate-600">
                             {props.location?.iso3166_1Alpha2} • {props.location?.localized?.en?.region}
                           </div>
