@@ -9,11 +9,13 @@ import { RunChecklist } from '@/components/RunChecklist';
 import { RunDetailSheet } from '@/components/RunDetailSheet';
 import { OfflineBanner } from '@/components/OfflineBanner';
 import { TrailMap } from '@/components/TrailMap';
+import { UnifiedFilterBar } from '@/components/UnifiedFilterBar';
+import { DifficultyBadge } from '@/components/DifficultyBadge';
 import { supabase } from '@/lib/supabase';
 import { useRunChecklist, useSyncQueue, useOnlineStatus } from '@/lib/hooks';
 import { offlineStorage } from '@/lib/offline';
 import { getNetworkStatus } from '@/lib/platform';
-import { MapPin, Mountain } from 'lucide-react';
+import { MapPin, Mountain, Check } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function LogRun() {
@@ -58,10 +60,113 @@ export default function LogRun() {
   // UI state
   const [showRunDetail, setShowRunDetail] = useState(false);
   const [selectedRun, setSelectedRun] = useState(null);
+  const [logMode, setLogMode] = useState('run'); // 'run' or 'lift'
+  const [lifts, setLifts] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedType, setSelectedType] = useState('all');
 
   // Get last logged run
   const lastLog = userLogs.length > 0 ? userLogs[0] : null;
   const lastRun = lastLog ? { ...lastLog, runs: runs.find(r => r.id === lastLog.run_id) } : null;
+
+  // Load lifts when resort changes
+  useEffect(() => {
+    const loadLifts = async () => {
+      if (!selectedResort?.id) {
+        setLifts([]);
+        return;
+      }
+
+      try {
+        const { data, error } = await supabase
+          .from('lifts')
+          .select('*')
+          .eq('ski_area_id', selectedResort.id)
+          .order('name');
+
+        if (error) throw error;
+        setLifts(data || []);
+      } catch (err) {
+        console.error('Error loading lifts:', err);
+        setLifts([]);
+      }
+    };
+
+    loadLifts();
+  }, [selectedResort?.id]);
+
+  // Handle lift logging
+  const handleLogLift = useCallback(async (liftId) => {
+    const lift = lifts.find(l => l.id === liftId);
+
+    if (!userId) {
+      toast.error('Please log in to log lifts');
+      return;
+    }
+
+    if (!selectedResort?.id) {
+      toast.error('Please select a resort first');
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('user_logs')
+        .insert({
+          user_id: userId,
+          lift_id: liftId,
+          ski_area_id: selectedResort.id,
+          log_type: 'lift',
+          logged_at: new Date().toISOString()
+        });
+
+      if (error) {
+        toast.error(`Failed to log lift: ${error.message}`);
+        return;
+      }
+
+      toast.success(`Logged: ${lift?.name || 'Lift'} ✓`, {
+        style: {
+          background: 'rgba(26, 33, 38, 0.95)',
+          backdropFilter: 'blur(12px)',
+          border: '1px solid rgba(255, 255, 255, 0.08)',
+          borderLeft: '3px solid #00E676',
+          borderRadius: '12px',
+          color: 'white',
+          fontFamily: 'Manrope, sans-serif',
+        },
+      });
+
+      refresh();
+    } catch (err) {
+      console.error('Error logging lift:', err);
+      toast.error('Failed to log lift');
+    }
+  }, [lifts, userId, selectedResort?.id, refresh]);
+
+  // Filter runs/lifts based on search and type
+  const filteredRuns = runs.filter(run => {
+    if (searchQuery && !run.name.toLowerCase().includes(searchQuery.toLowerCase())) {
+      return false;
+    }
+    if (selectedType === 'groomed' && run.grooming !== 'groomed') {
+      return false;
+    }
+    if (selectedType === 'moguls' && !run.name.toLowerCase().includes('mogul')) {
+      return false;
+    }
+    if (selectedType === 'trees' && !run.name.toLowerCase().includes('tree') && !run.name.toLowerCase().includes('glade')) {
+      return false;
+    }
+    return true;
+  });
+
+  const filteredLifts = lifts.filter(lift => {
+    if (searchQuery && !lift.name.toLowerCase().includes(searchQuery.toLowerCase())) {
+      return false;
+    }
+    return true;
+  });
 
   // Handle run tap (show detail)
   const handleRunTap = useCallback((run) => {
@@ -304,7 +409,7 @@ export default function LogRun() {
           <h1 className="text-xl font-bold text-white" style={{ fontFamily: 'Manrope, sans-serif' }}>
             <span style={{ color: '#00B4D8' }}>{userName}</span> — Hucked it, now log it. 🏆
           </h1>
-          
+
           {/* GPS Detected Banner */}
           {detectedResort && selectedResort?.id !== detectedResort.id && (
             <button
@@ -323,6 +428,56 @@ export default function LogRun() {
           )}
         </div>
 
+        {/* Run/Lift Toggle */}
+        {selectedResort && (
+          <div className="mb-4">
+            <GlassCard className="p-1 inline-flex">
+              <button
+                onClick={() => setLogMode('run')}
+                className="px-4 py-2 rounded-lg text-sm font-medium transition-all"
+                style={{
+                  backgroundColor: logMode === 'run' ? 'rgba(0, 180, 216, 0.2)' : 'transparent',
+                  color: logMode === 'run' ? '#00B4D8' : 'rgba(255,255,255,0.6)',
+                  fontFamily: 'Manrope, sans-serif'
+                }}
+              >
+                Log Run
+              </button>
+              <button
+                onClick={() => setLogMode('lift')}
+                className="px-4 py-2 rounded-lg text-sm font-medium transition-all"
+                style={{
+                  backgroundColor: logMode === 'lift' ? 'rgba(0, 180, 216, 0.2)' : 'transparent',
+                  color: logMode === 'lift' ? '#00B4D8' : 'rgba(255,255,255,0.6)',
+                  fontFamily: 'Manrope, sans-serif'
+                }}
+              >
+                Log Lift
+              </button>
+            </GlassCard>
+          </div>
+        )}
+
+        {/* Unified Filter Bar */}
+        {selectedResort && (
+          <div className="mb-4">
+            <UnifiedFilterBar
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
+              selectedType={selectedType}
+              onTypeChange={setSelectedType}
+              selectedDifficulty={filter}
+              onDifficultyChange={setFilter}
+              showMountainFilter={false}
+              showDifficultyFilter={logMode === 'run'}
+              showTypeFilter={true}
+              showHistoryFilter={false}
+              region={profile?.difficulty_region}
+              placeholder={logMode === 'run' ? 'Search runs...' : 'Search lifts...'}
+            />
+          </div>
+        )}
+
         {/* Scoutable Trail Map - Scout before selecting a run */}
         {selectedResort && (
           <div className="mb-6">
@@ -337,15 +492,15 @@ export default function LogRun() {
           </div>
         )}
 
-        {/* Run count */}
+        {/* Item count */}
         {selectedResort && (
           <p className="text-sm font-medium text-white mb-4" style={{ fontFamily: 'Manrope, sans-serif' }}>
-            {runs.length} runs available
+            {logMode === 'run' ? `${filteredRuns.length} runs available` : `${filteredLifts.length} lifts available`}
           </p>
         )}
 
         {/* Run Checklist */}
-        {selectedResort && (
+        {selectedResort && logMode === 'run' && (
           <RunChecklist
             groupedRuns={getGroupedRuns()}
             getRunStatus={getRunStatus}
@@ -361,6 +516,64 @@ export default function LogRun() {
             region={profile?.difficulty_region}
             isLoading={isLoading}
           />
+        )}
+
+        {/* Lift List */}
+        {selectedResort && logMode === 'lift' && (
+          <div className="space-y-2">
+            {filteredLifts.length === 0 && (
+              <GlassCard className="p-8 text-center">
+                <Mountain size={48} className="mx-auto mb-4" style={{ color: 'rgba(255,255,255,0.2)' }} />
+                <p className="text-sm" style={{ color: 'rgba(255,255,255,0.6)' }}>
+                  No lifts found
+                </p>
+              </GlassCard>
+            )}
+            {filteredLifts.map((lift) => (
+              <GlassCard
+                key={lift.id}
+                className="p-4 transition-all hover:bg-white/10 cursor-pointer"
+                onClick={() => handleLogLift(lift.id)}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <h3 className="text-base font-semibold text-white mb-1" style={{ fontFamily: 'Manrope, sans-serif' }}>
+                      {lift.name}
+                    </h3>
+                    <div className="flex items-center gap-3 text-sm" style={{ color: 'rgba(255,255,255,0.6)' }}>
+                      {lift.lift_type && (
+                        <span className="px-2 py-0.5 rounded text-xs" style={{
+                          backgroundColor: 'rgba(0, 180, 216, 0.1)',
+                          color: '#00B4D8',
+                          fontFamily: 'JetBrains Mono, monospace'
+                        }}>
+                          {lift.lift_type.replace('_', ' ')}
+                        </span>
+                      )}
+                      {lift.capacity && (
+                        <span style={{ fontFamily: 'JetBrains Mono, monospace' }}>
+                          Capacity: {lift.capacity}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <button
+                    className="p-2 rounded-full transition-all hover:scale-110"
+                    style={{
+                      backgroundColor: 'rgba(0, 230, 118, 0.1)',
+                      color: '#00E676'
+                    }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleLogLift(lift.id);
+                    }}
+                  >
+                    <Check size={20} />
+                  </button>
+                </div>
+              </GlassCard>
+            ))}
+          </div>
         )}
 
         {/* No Resort Selected */}

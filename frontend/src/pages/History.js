@@ -10,12 +10,13 @@ import { DaySummary } from '@/components/DaySummary';
 import { TrailMap } from '@/components/TrailMap';
 import { StatsSection } from '@/components/StatsSection';
 import { OfflineBanner } from '@/components/OfflineBanner';
+import { UnifiedFilterBar } from '@/components/UnifiedFilterBar';
 import { supabase } from '@/lib/supabase';
 import { useDaySummary } from '@/lib/hooks';
 import { offlineStorage } from '@/lib/offline';
 import { getNetworkStatus } from '@/lib/platform';
 import { format, parseISO, isToday as checkIsToday, startOfDay, endOfDay } from 'date-fns';
-import { Trash2, Calendar, TrendingUp, Mountain, ChevronRight, Star, ChevronDown } from 'lucide-react';
+import { Trash2, Calendar, TrendingUp, Mountain, ChevronRight, Star, ChevronDown, CreditCard as Edit, CreditCard as Edit2, X } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function History() {
@@ -30,6 +31,10 @@ export default function History() {
   const [showDaySummary, setShowDaySummary] = useState(false);
   const [expandedDays, setExpandedDays] = useState({});
   const [isShowingCached, setIsShowingCached] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedDifficulty, setSelectedDifficulty] = useState('all');
+  const [selectedType, setSelectedType] = useState('all');
 
   // Day summary hook for selected date
   const daySummaryData = useDaySummary(profile?.id, selectedDate || new Date());
@@ -231,6 +236,80 @@ export default function History() {
     }));
   };
 
+  const handleBulkDeleteDay = async (dateStr) => {
+    if (!profile?.id) return;
+
+    const confirmDelete = window.confirm(
+      `Delete all ${groupedLogs[dateStr]?.logs.length} logs from ${format(parseISO(dateStr), 'MMM d, yyyy')}?`
+    );
+
+    if (!confirmDelete) return;
+
+    try {
+      const logIds = groupedLogs[dateStr].logs.map(log => log.id);
+
+      const { error } = await supabase
+        .from('user_logs')
+        .delete()
+        .in('id', logIds);
+
+      if (error) throw error;
+
+      toast.success('Day deleted successfully');
+      loadGroupedLogs();
+      loadTodayLogs();
+      loadLifetimeRuns();
+    } catch (err) {
+      console.error('Error deleting day:', err);
+      toast.error('Failed to delete day');
+    }
+  };
+
+  const handleDeleteSingleLog = async (logId, logName) => {
+    const confirmDelete = window.confirm(`Delete "${logName}" from your history?`);
+
+    if (!confirmDelete) return;
+
+    try {
+      const { error } = await supabase
+        .from('user_logs')
+        .delete()
+        .eq('id', logId);
+
+      if (error) throw error;
+
+      toast.success('Log deleted successfully');
+      loadGroupedLogs();
+      loadTodayLogs();
+      loadLifetimeRuns();
+    } catch (err) {
+      console.error('Error deleting log:', err);
+      toast.error('Failed to delete log');
+    }
+  };
+
+  // Filter logs based on search and filters
+  const filterLogs = (logs) => {
+    return logs.filter(log => {
+      if (searchQuery && !log.runs?.name?.toLowerCase().includes(searchQuery.toLowerCase())) {
+        return false;
+      }
+      if (selectedDifficulty !== 'all' && log.runs?.difficulty !== selectedDifficulty) {
+        return false;
+      }
+      if (selectedType === 'groomed' && log.runs?.grooming !== 'groomed') {
+        return false;
+      }
+      if (selectedType === 'moguls' && !log.runs?.name?.toLowerCase().includes('mogul')) {
+        return false;
+      }
+      if (selectedType === 'trees' && !log.runs?.name?.toLowerCase().includes('tree') && !log.runs?.name?.toLowerCase().includes('glade')) {
+        return false;
+      }
+      return true;
+    });
+  };
+
   const dates = Object.keys(groupedLogs).sort((a, b) => b.localeCompare(a));
   const isPremiumLocked = dates.length > 20 && !profile?.is_premium;
   const visibleDates = isPremiumLocked ? dates.slice(0, 20) : dates;
@@ -315,25 +394,32 @@ export default function History() {
         <h2 className="text-lg font-semibold text-white mb-2" style={{ fontFamily: 'Manrope, sans-serif' }}>
           Season Runs
         </h2>
-        
+
         {visibleDates.map((dateStr) => {
           const dayData = groupedLogs[dateStr];
           const summary = daySummaries[dateStr];
           const isCurrentDay = checkIsToday(parseISO(dateStr));
           const isExpanded = expandedDays[dateStr];
-          
+          const filteredDayLogs = filterLogs(dayData.logs);
+
+          if (filteredDayLogs.length === 0 && (searchQuery || selectedDifficulty !== 'all' || selectedType !== 'all')) {
+            return null;
+          }
+
           return (
-            <GlassCard 
+            <GlassCard
               key={dateStr}
               className="overflow-hidden"
               data-testid={`day-card-${dateStr}`}
             >
               {/* Day Header - Always visible */}
-              <div 
-                className="p-4 cursor-pointer transition-all hover:bg-white/10 flex items-center justify-between"
-                onClick={() => toggleDayExpansion(dateStr)}
+              <div
+                className="p-4 transition-all hover:bg-white/10 flex items-center justify-between"
               >
-                <div className="flex-1">
+                <div
+                  className="flex-1 cursor-pointer"
+                  onClick={() => toggleDayExpansion(dateStr)}
+                >
                   <div className="flex items-center gap-2 mb-1">
                     <h3 className="text-base font-semibold text-white" style={{ fontFamily: 'Manrope, sans-serif' }}>
                       {summary?.title || format(parseISO(dateStr), 'EEEE, MMM d')}
@@ -347,41 +433,65 @@ export default function History() {
                       </span>
                     )}
                   </div>
-                  
+
                   <div className="flex items-center gap-4 text-sm" style={{ color: 'rgba(255,255,255,0.6)' }}>
                     <span className="flex items-center gap-1">
                       <Mountain size={14} />
-                      {dayData.logs.length} runs
+                      {filteredDayLogs.length} runs
                     </span>
                     <span className="flex items-center gap-1" style={{ fontFamily: 'JetBrains Mono, monospace' }}>
                       <TrendingUp size={14} />
-                      {dayData.totalVertical.toLocaleString()} ft
+                      {filteredDayLogs.reduce((sum, log) => sum + (log.runs?.vertical_ft || 0), 0).toLocaleString()} ft
                     </span>
                   </div>
                 </div>
-                
-                <ChevronDown 
-                  size={20} 
-                  style={{ 
-                    color: 'rgba(255,255,255,0.3)',
-                    transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
-                    transition: 'transform 0.2s ease'
-                  }} 
-                />
+
+                <div className="flex items-center gap-2">
+                  {/* Delete Day Button (Edit Mode) */}
+                  {isEditMode && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleBulkDeleteDay(dateStr);
+                      }}
+                      className="p-2 rounded-lg transition-all hover:scale-110"
+                      style={{
+                        backgroundColor: 'rgba(255, 23, 68, 0.1)',
+                        color: '#FF1744'
+                      }}
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  )}
+
+                  <button
+                    onClick={() => toggleDayExpansion(dateStr)}
+                    className="p-2"
+                  >
+                    <ChevronDown
+                      size={20}
+                      style={{
+                        color: 'rgba(255,255,255,0.3)',
+                        transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
+                        transition: 'transform 0.2s ease'
+                      }}
+                    />
+                  </button>
+                </div>
               </div>
 
               {/* Expanded Runs List */}
               {isExpanded && (
                 <div className="border-t" style={{ borderColor: 'rgba(255,255,255,0.1)' }}>
-                  {dayData.logs.map((log, idx) => (
-                    <div 
+                  {filteredDayLogs.map((log, idx) => (
+                    <div
                       key={log.id}
                       className="px-4 py-3 flex items-center justify-between"
-                      style={{ 
+                      style={{
                         backgroundColor: idx % 2 === 0 ? 'rgba(255,255,255,0.02)' : 'transparent'
                       }}
                     >
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-3 flex-1">
                         <div className="flex items-center gap-2">
                           <span className="text-sm text-white" style={{ fontFamily: 'Manrope, sans-serif' }}>
                             {log.runs?.name || 'Unknown Run'}
@@ -391,14 +501,31 @@ export default function History() {
                           )}
                         </div>
                       </div>
-                      <span className="text-xs" style={{ color: 'rgba(255,255,255,0.5)', fontFamily: 'JetBrains Mono, monospace' }}>
-                        {(log.runs?.vertical_ft || 0).toLocaleString()} ft
-                      </span>
+                      <div className="flex items-center gap-3">
+                        <span className="text-xs" style={{ color: 'rgba(255,255,255,0.5)', fontFamily: 'JetBrains Mono, monospace' }}>
+                          {(log.runs?.vertical_ft || 0).toLocaleString()} ft
+                        </span>
+                        {/* Edit/Delete Controls (Edit Mode) */}
+                        {isEditMode && (
+                          <div className="flex items-center gap-1">
+                            <button
+                              onClick={() => handleDeleteSingleLog(log.id, log.runs?.name || 'run')}
+                              className="p-1.5 rounded-lg transition-all hover:scale-110"
+                              style={{
+                                backgroundColor: 'rgba(255, 23, 68, 0.1)',
+                                color: '#FF1744'
+                              }}
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   ))}
-                  
+
                   {/* View Day Summary Button */}
-                  <div 
+                  <div
                     className="px-4 py-3 text-center cursor-pointer transition-all hover:bg-white/10"
                     style={{ borderTop: '1px solid rgba(255,255,255,0.1)' }}
                     onClick={(e) => {
@@ -513,10 +640,55 @@ export default function History() {
             ⚡ Showing last synced data
           </div>
         )}
-        {/* Page Title */}
-        <h1 className="text-xl font-bold text-white mb-6" style={{ fontFamily: 'Manrope, sans-serif' }}>
-          <span style={{ color: '#00B4D8' }}>{userName}</span> — Your mountain legacy. 🧭
-        </h1>
+        {/* Page Title with Edit Button */}
+        <div className="flex items-center justify-between mb-4">
+          <h1 className="text-xl font-bold text-white" style={{ fontFamily: 'Manrope, sans-serif' }}>
+            <span style={{ color: '#00B4D8' }}>{userName}</span> — Your mountain legacy. 🧭
+          </h1>
+          <button
+            onClick={() => setIsEditMode(!isEditMode)}
+            className="px-3 py-1.5 rounded-lg text-sm font-medium transition-all hover:scale-105"
+            style={{
+              backgroundColor: isEditMode ? 'rgba(255, 23, 68, 0.1)' : 'rgba(0, 180, 216, 0.1)',
+              color: isEditMode ? '#FF1744' : '#00B4D8',
+              border: `1px solid ${isEditMode ? '#FF1744' : '#00B4D8'}`,
+              fontFamily: 'Manrope, sans-serif',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px'
+            }}
+          >
+            {isEditMode ? (
+              <>
+                <X size={14} />
+                Done
+              </>
+            ) : (
+              <>
+                <Edit2 size={14} />
+                Edit
+              </>
+            )}
+          </button>
+        </div>
+
+        {/* Unified Filter Bar */}
+        <div className="mb-4">
+          <UnifiedFilterBar
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            selectedDifficulty={selectedDifficulty}
+            onDifficultyChange={setSelectedDifficulty}
+            selectedType={selectedType}
+            onTypeChange={setSelectedType}
+            showMountainFilter={false}
+            showDifficultyFilter={true}
+            showTypeFilter={true}
+            showHistoryFilter={false}
+            region={profile?.difficulty_region}
+            placeholder="Search runs..."
+          />
+        </div>
 
         {/* Stats Section with Toggle (controlled by History page) */}
         <div className="mb-6">
