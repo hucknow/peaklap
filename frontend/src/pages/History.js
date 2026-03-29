@@ -35,6 +35,12 @@ export default function History() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedDifficulty, setSelectedDifficulty] = useState('all');
   const [selectedType, setSelectedType] = useState('all');
+  const [editingLog, setEditingLog] = useState(null);
+  const [editFormData, setEditFormData] = useState({
+    logged_at: '',
+    snow_condition: '',
+    notes: ''
+  });
 
   // Day summary hook for selected date
   const daySummaryData = useDaySummary(profile?.id, selectedDate || new Date());
@@ -288,6 +294,41 @@ export default function History() {
     }
   };
 
+  const handleEditLog = (log) => {
+    setEditingLog(log);
+    setEditFormData({
+      logged_at: log.logged_at ? format(parseISO(log.logged_at), "yyyy-MM-dd'T'HH:mm") : '',
+      snow_condition: log.snow_condition || '',
+      notes: log.notes || ''
+    });
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingLog) return;
+
+    try {
+      const { error } = await supabase
+        .from('user_logs')
+        .update({
+          logged_at: editFormData.logged_at ? new Date(editFormData.logged_at).toISOString() : editingLog.logged_at,
+          snow_condition: editFormData.snow_condition || null,
+          notes: editFormData.notes || null
+        })
+        .eq('id', editingLog.id);
+
+      if (error) throw error;
+
+      toast.success('Log updated successfully');
+      setEditingLog(null);
+      loadGroupedLogs();
+      loadTodayLogs();
+      loadLifetimeRuns();
+    } catch (err) {
+      console.error('Error updating log:', err);
+      toast.error('Failed to update log');
+    }
+  };
+
   // Filter logs based on search and filters
   const filterLogs = (logs) => {
     return logs.filter(log => {
@@ -508,6 +549,16 @@ export default function History() {
                         {/* Edit/Delete Controls (Edit Mode) */}
                         {isEditMode && (
                           <div className="flex items-center gap-1">
+                            <button
+                              onClick={() => handleEditLog(log)}
+                              className="p-1.5 rounded-lg transition-all hover:scale-110"
+                              style={{
+                                backgroundColor: 'rgba(0, 180, 216, 0.1)',
+                                color: '#00B4D8'
+                              }}
+                            >
+                              <Edit2 size={14} />
+                            </button>
                             <button
                               onClick={() => handleDeleteSingleLog(log.id, log.runs?.name || 'run')}
                               className="p-1.5 rounded-lg transition-all hover:scale-110"
@@ -797,6 +848,127 @@ export default function History() {
         isOpen={showDaySummary}
         onClose={() => setShowDaySummary(false)}
       />
+
+      {/* Edit Log Modal */}
+      {editingLog && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          onClick={() => setEditingLog(null)}
+        >
+          {/* Backdrop */}
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+
+          {/* Modal */}
+          <GlassCard
+            className="relative w-full max-w-md p-6 space-y-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-white" style={{ fontFamily: 'Manrope, sans-serif' }}>
+                Edit Log: {editingLog.runs?.name || 'Run'}
+              </h3>
+              <button
+                onClick={() => setEditingLog(null)}
+                className="p-1 rounded-lg transition-all hover:bg-white/10"
+              >
+                <X size={20} style={{ color: 'rgba(255,255,255,0.6)' }} />
+              </button>
+            </div>
+
+            {/* Form Fields */}
+            <div className="space-y-4">
+              {/* Date/Time */}
+              <div>
+                <label className="block text-sm font-medium mb-2" style={{ color: 'rgba(255,255,255,0.8)' }}>
+                  Date & Time
+                </label>
+                <input
+                  type="datetime-local"
+                  value={editFormData.logged_at}
+                  onChange={(e) => setEditFormData({ ...editFormData, logged_at: e.target.value })}
+                  className="w-full px-3 py-2 rounded-lg text-white border-0 outline-none"
+                  style={{
+                    backgroundColor: 'rgba(255,255,255,0.05)',
+                    fontFamily: 'Manrope, sans-serif',
+                    border: '1px solid rgba(255,255,255,0.08)'
+                  }}
+                />
+              </div>
+
+              {/* Snow Condition */}
+              <div>
+                <label className="block text-sm font-medium mb-2" style={{ color: 'rgba(255,255,255,0.8)' }}>
+                  Snow Condition
+                </label>
+                <select
+                  value={editFormData.snow_condition}
+                  onChange={(e) => setEditFormData({ ...editFormData, snow_condition: e.target.value })}
+                  className="w-full px-3 py-2 rounded-lg text-white border-0 outline-none"
+                  style={{
+                    backgroundColor: 'rgba(255,255,255,0.05)',
+                    fontFamily: 'Manrope, sans-serif',
+                    border: '1px solid rgba(255,255,255,0.08)'
+                  }}
+                >
+                  <option value="">Select condition...</option>
+                  <option value="powder">Powder</option>
+                  <option value="packed">Packed</option>
+                  <option value="icy">Icy</option>
+                  <option value="slush">Slush</option>
+                  <option value="groomed">Groomed</option>
+                  <option value="crud">Crud</option>
+                </select>
+              </div>
+
+              {/* Notes */}
+              <div>
+                <label className="block text-sm font-medium mb-2" style={{ color: 'rgba(255,255,255,0.8)' }}>
+                  Notes
+                </label>
+                <textarea
+                  value={editFormData.notes}
+                  onChange={(e) => setEditFormData({ ...editFormData, notes: e.target.value })}
+                  placeholder="Add notes about this run..."
+                  rows={3}
+                  className="w-full px-3 py-2 rounded-lg text-white border-0 outline-none resize-none"
+                  style={{
+                    backgroundColor: 'rgba(255,255,255,0.05)',
+                    fontFamily: 'Manrope, sans-serif',
+                    border: '1px solid rgba(255,255,255,0.08)'
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={() => setEditingLog(null)}
+                className="flex-1 py-2 rounded-lg text-sm font-medium transition-all hover:bg-white/10"
+                style={{
+                  backgroundColor: 'rgba(255,255,255,0.05)',
+                  color: 'rgba(255,255,255,0.7)',
+                  fontFamily: 'Manrope, sans-serif'
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSaveEdit}
+                className="flex-1 py-2 rounded-lg text-sm font-medium transition-all hover:scale-105"
+                style={{
+                  backgroundColor: '#00B4D8',
+                  color: '#000000',
+                  fontFamily: 'Manrope, sans-serif'
+                }}
+              >
+                Save Changes
+              </button>
+            </div>
+          </GlassCard>
+        </div>
+      )}
 
       <Footer />
       <BottomNav />

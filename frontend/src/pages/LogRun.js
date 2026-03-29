@@ -15,8 +15,25 @@ import { supabase } from '@/lib/supabase';
 import { useRunChecklist, useSyncQueue, useOnlineStatus } from '@/lib/hooks';
 import { offlineStorage } from '@/lib/offline';
 import { getNetworkStatus } from '@/lib/platform';
-import { MapPin, Mountain, Check } from 'lucide-react';
+import { MapPin, Mountain, Check, Search } from 'lucide-react';
 import { toast } from 'sonner';
+
+function FilterChip({ label, active, onClick, color }) {
+  return (
+    <button
+      onClick={onClick}
+      className="px-3 py-1.5 rounded-full text-xs font-medium transition-all"
+      style={{
+        backgroundColor: active ? (color || '#00B4D8') : 'rgba(255,255,255,0.05)',
+        color: active ? (color === '#000000' ? '#FFFFFF' : '#000000') : 'rgba(255,255,255,0.7)',
+        border: `1px solid ${active ? (color || '#00B4D8') : 'rgba(255,255,255,0.08)'}`,
+        fontFamily: 'Manrope, sans-serif'
+      }}
+    >
+      {label}
+    </button>
+  );
+}
 
 export default function LogRun() {
   const { profile, user } = useAuth();
@@ -149,6 +166,9 @@ export default function LogRun() {
     if (searchQuery && !run.name.toLowerCase().includes(searchQuery.toLowerCase())) {
       return false;
     }
+    if (filter && run.difficulty !== filter) {
+      return false;
+    }
     if (selectedType === 'groomed' && run.grooming !== 'groomed') {
       return false;
     }
@@ -158,6 +178,16 @@ export default function LogRun() {
     if (selectedType === 'trees' && !run.name.toLowerCase().includes('tree') && !run.name.toLowerCase().includes('glade')) {
       return false;
     }
+
+    // History tag filtering
+    if (selectedType === 'today' || selectedType === 'season' || selectedType === 'lifetime' || selectedType === 'never') {
+      const status = getRunStatus(run.id);
+      if (selectedType === 'today' && status !== 'today') return false;
+      if (selectedType === 'season' && status !== 'season' && status !== 'today') return false;
+      if (selectedType === 'lifetime' && status === 'never') return false;
+      if (selectedType === 'never' && status !== 'never') return false;
+    }
+
     return true;
   });
 
@@ -428,60 +458,10 @@ export default function LogRun() {
           )}
         </div>
 
-        {/* Run/Lift Toggle */}
-        {selectedResort && (
-          <div className="mb-4">
-            <GlassCard className="p-1 inline-flex">
-              <button
-                onClick={() => setLogMode('run')}
-                className="px-4 py-2 rounded-lg text-sm font-medium transition-all"
-                style={{
-                  backgroundColor: logMode === 'run' ? 'rgba(0, 180, 216, 0.2)' : 'transparent',
-                  color: logMode === 'run' ? '#00B4D8' : 'rgba(255,255,255,0.6)',
-                  fontFamily: 'Manrope, sans-serif'
-                }}
-              >
-                Log Run
-              </button>
-              <button
-                onClick={() => setLogMode('lift')}
-                className="px-4 py-2 rounded-lg text-sm font-medium transition-all"
-                style={{
-                  backgroundColor: logMode === 'lift' ? 'rgba(0, 180, 216, 0.2)' : 'transparent',
-                  color: logMode === 'lift' ? '#00B4D8' : 'rgba(255,255,255,0.6)',
-                  fontFamily: 'Manrope, sans-serif'
-                }}
-              >
-                Log Lift
-              </button>
-            </GlassCard>
-          </div>
-        )}
-
-        {/* Unified Filter Bar */}
-        {selectedResort && (
-          <div className="mb-4">
-            <UnifiedFilterBar
-              searchQuery={searchQuery}
-              onSearchChange={setSearchQuery}
-              selectedType={selectedType}
-              onTypeChange={setSelectedType}
-              selectedDifficulty={filter}
-              onDifficultyChange={setFilter}
-              showMountainFilter={false}
-              showDifficultyFilter={logMode === 'run'}
-              showTypeFilter={true}
-              showHistoryFilter={false}
-              region={profile?.difficulty_region}
-              placeholder={logMode === 'run' ? 'Search runs...' : 'Search lifts...'}
-            />
-          </div>
-        )}
-
         {/* Scoutable Trail Map - Scout before selecting a run */}
         {selectedResort && (
-          <div className="mb-6">
-            <TrailMap 
+          <div className="mb-4">
+            <TrailMap
               resort={selectedResort}
               minHeight={280}
               maxHeight={450}
@@ -492,11 +472,120 @@ export default function LogRun() {
           </div>
         )}
 
-        {/* Item count */}
+        {/* Run/Lift Toggle */}
         {selectedResort && (
-          <p className="text-sm font-medium text-white mb-4" style={{ fontFamily: 'Manrope, sans-serif' }}>
-            {logMode === 'run' ? `${filteredRuns.length} runs available` : `${filteredLifts.length} lifts available`}
-          </p>
+          <div className="mb-4">
+            <div className="flex gap-2">
+              <button
+                onClick={() => setLogMode('run')}
+                className="flex-1 py-2 rounded-full text-sm font-semibold transition-all"
+                style={{
+                  backgroundColor: logMode === 'run' ? '#00B4D8' : 'rgba(255,255,255,0.05)',
+                  color: logMode === 'run' ? '#000000' : 'rgba(255,255,255,0.7)',
+                  border: '1px solid rgba(255,255,255,0.08)',
+                  fontFamily: 'Manrope, sans-serif'
+                }}
+              >
+                Runs ({filteredRuns.length})
+              </button>
+              <button
+                onClick={() => setLogMode('lift')}
+                className="flex-1 py-2 rounded-full text-sm font-semibold transition-all"
+                style={{
+                  backgroundColor: logMode === 'lift' ? '#00B4D8' : 'rgba(255,255,255,0.05)',
+                  color: logMode === 'lift' ? '#000000' : 'rgba(255,255,255,0.7)',
+                  border: '1px solid rgba(255,255,255,0.08)',
+                  fontFamily: 'Manrope, sans-serif'
+                }}
+              >
+                Lifts ({filteredLifts.length})
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Search Bar */}
+        {selectedResort && (
+          <div className="relative mb-4">
+            <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'rgba(255,255,255,0.4)' }} />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder={logMode === 'run' ? 'Search runs...' : 'Search lifts...'}
+              className="w-full pl-10 pr-4 py-3 rounded-xl text-sm text-white border-0 outline-none"
+              style={{
+                backgroundColor: 'rgba(255,255,255,0.05)',
+                fontFamily: 'Manrope, sans-serif',
+                border: '1px solid rgba(255,255,255,0.08)'
+              }}
+            />
+          </div>
+        )}
+
+        {/* Filter Chips - Difficulty */}
+        {selectedResort && logMode === 'run' && (
+          <div className="mb-3">
+            <div className="flex flex-wrap gap-2">
+              <FilterChip
+                label="Green"
+                active={filter === 'green'}
+                onClick={() => setFilter(filter === 'green' ? '' : 'green')}
+                color="#4CAF50"
+              />
+              <FilterChip
+                label="Blue"
+                active={filter === 'blue'}
+                onClick={() => setFilter(filter === 'blue' ? '' : 'blue')}
+                color="#2196F3"
+              />
+              <FilterChip
+                label="Black"
+                active={filter === 'black'}
+                onClick={() => setFilter(filter === 'black' ? '' : 'black')}
+                color="#000000"
+              />
+              <FilterChip
+                label="Double Black ◆◆"
+                active={filter === 'double-black'}
+                onClick={() => setFilter(filter === 'double-black' ? '' : 'double-black')}
+                color="#000000"
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Filter Chips - Type */}
+        {selectedResort && (
+          <div className="mb-4">
+            <div className="flex flex-wrap gap-2">
+              <FilterChip
+                label="All"
+                active={selectedType === 'all'}
+                onClick={() => setSelectedType('all')}
+              />
+              <FilterChip
+                label="Today"
+                active={selectedType === 'today'}
+                onClick={() => setSelectedType(selectedType === 'today' ? 'all' : 'today')}
+              />
+              <FilterChip
+                label="Season"
+                active={selectedType === 'season'}
+                onClick={() => setSelectedType(selectedType === 'season' ? 'all' : 'season')}
+              />
+              <FilterChip
+                label="Lifetime"
+                active={selectedType === 'lifetime'}
+                onClick={() => setSelectedType(selectedType === 'lifetime' ? 'all' : 'lifetime')}
+              />
+              <FilterChip
+                label="Never Skied"
+                active={selectedType === 'never'}
+                onClick={() => setSelectedType(selectedType === 'never' ? 'all' : 'never')}
+              />
+            </div>
+          </div>
         )}
 
         {/* Run Checklist */}
