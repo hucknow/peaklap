@@ -77,10 +77,10 @@ export default function AdminDashboard() {
         ) : stats ? (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-              <Card>
+              <Card className="bg-white">
                 <CardHeader className="pb-3">
-                  <CardDescription>Total Ski Areas</CardDescription>
-                  <CardTitle className="text-3xl">{stats.total_ski_areas}</CardTitle>
+                  <CardDescription className="text-slate-600">Total Ski Areas</CardDescription>
+                  <CardTitle className="text-3xl text-slate-900">{stats.total_ski_areas}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="text-sm text-slate-600">
@@ -96,10 +96,10 @@ export default function AdminDashboard() {
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="bg-white">
                 <CardHeader className="pb-3">
-                  <CardDescription>Total Runs</CardDescription>
-                  <CardTitle className="text-3xl">{stats.total_runs.toLocaleString()}</CardTitle>
+                  <CardDescription className="text-slate-600">Total Runs</CardDescription>
+                  <CardTitle className="text-3xl text-slate-900">{stats.total_runs.toLocaleString()}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="text-sm text-slate-600">
@@ -108,10 +108,10 @@ export default function AdminDashboard() {
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="bg-white">
                 <CardHeader className="pb-3">
-                  <CardDescription>Total Lifts</CardDescription>
-                  <CardTitle className="text-3xl">{stats.total_lifts.toLocaleString()}</CardTitle>
+                  <CardDescription className="text-slate-600">Total Lifts</CardDescription>
+                  <CardTitle className="text-3xl text-slate-900">{stats.total_lifts.toLocaleString()}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="text-sm text-slate-600">
@@ -150,15 +150,15 @@ export default function AdminDashboard() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => navigate('/admin/bulk-load')}>
+              <Card className="bg-white cursor-pointer hover:shadow-lg transition-shadow" onClick={() => navigate('/admin/bulk-load')}>
                 <CardHeader>
                   <div className="flex items-center gap-3">
                     <div className="p-2 bg-blue-100 rounded-lg">
                       <Upload className="h-6 w-6 text-blue-600" />
                     </div>
                     <div>
-                      <CardTitle>Bulk Load from OpenSkiData</CardTitle>
-                      <CardDescription>Load multiple resorts at once</CardDescription>
+                      <CardTitle className="text-slate-900">Bulk Load from OpenSkiData</CardTitle>
+                      <CardDescription className="text-slate-600">Load multiple resorts at once</CardDescription>
                     </div>
                   </div>
                 </CardHeader>
@@ -169,15 +169,15 @@ export default function AdminDashboard() {
                 </CardContent>
               </Card>
 
-              <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => navigate('/admin/manage-resorts')}>
+              <Card className="bg-white cursor-pointer hover:shadow-lg transition-shadow" onClick={() => navigate('/admin/manage-resorts')}>
                 <CardHeader>
                   <div className="flex items-center gap-3">
                     <div className="p-2 bg-green-100 rounded-lg">
                       <Settings className="h-6 w-6 text-green-600" />
                     </div>
                     <div>
-                      <CardTitle>Manage Resorts</CardTitle>
-                      <CardDescription>Publish, edit, or delete resorts</CardDescription>
+                      <CardTitle className="text-slate-900">Manage Resorts</CardTitle>
+                      <CardDescription className="text-slate-600">Publish, edit, or delete resorts</CardDescription>
                     </div>
                   </div>
                 </CardHeader>
