@@ -210,7 +210,12 @@ CREATE INDEX IF NOT EXISTS idx_lifts_ref ON lifts(ref);
 -- CREATE DATABASE VIEWS
 -- ==========================================
 
-CREATE OR REPLACE VIEW runs_openskidata AS
+-- Drop views first to avoid column conflicts
+DROP VIEW IF EXISTS runs_openskidata CASCADE;
+DROP VIEW IF EXISTS lifts_openskidata CASCADE;
+
+-- Recreate views with updated columns
+CREATE VIEW runs_openskidata AS
 SELECT
   id,
   ski_area_id,
@@ -227,7 +232,7 @@ SELECT
   created_at
 FROM runs;
 
-CREATE OR REPLACE VIEW lifts_openskidata AS
+CREATE VIEW lifts_openskidata AS
 SELECT
   id,
   ski_area_id,

@@ -1,0 +1,12 @@
+{
+	"appId": "com.peaklap.app",
+	"appName": "PeakLap",
+	"webDir": "build",
+	"bundledWebRuntime": false,
+	"plugins": {
+		"Filesystem": {
+			"androidDisplayName": "PeakLap"
+		},
+		"Network": {}
+	}
+}
