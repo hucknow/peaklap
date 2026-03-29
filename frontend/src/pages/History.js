@@ -130,7 +130,10 @@ export default function History() {
             };
           }
           grouped[dateKey].logs.push(log);
-          grouped[dateKey].totalVertical += log.runs?.vertical_ft || 0;
+          // Calculate vertical from lift logs only
+          if (log.log_type === 'lift') {
+            grouped[dateKey].totalVertical += log.lifts?.vertical_ft || 0;
+          }
         });
         setGroupedLogs(grouped);
         setIsShowingCached(true);
@@ -141,23 +144,23 @@ export default function History() {
   // Load today's logs
   const loadTodayLogs = useCallback(async () => {
     if (!profile) return;
-    
+
     const today = new Date();
     const startOfToday = startOfDay(today).toISOString();
     const endOfToday = endOfDay(today).toISOString();
-    
+
     let query = supabase
       .from('user_logs')
-      .select('*, runs(name, difficulty, vertical_ft, zone), ski_areas(name)')
+      .select('*, runs(name, difficulty, vertical_ft, zone), lifts(name, vertical_ft), ski_areas(name), log_type')
       .eq('user_id', profile.id)
       .gte('logged_at', startOfToday)
       .lte('logged_at', endOfToday)
       .order('logged_at', { ascending: false });
-    
+
     if (selectedResort?.id) {
       query = query.eq('ski_area_id', selectedResort.id);
     }
-    
+
     const { data } = await query;
     if (data) {
       setTodayLogs(data);
@@ -454,7 +457,12 @@ export default function History() {
       );
     }
 
-    const totalVertical = todayLogs.reduce((sum, log) => sum + (log.runs?.vertical_ft || 0), 0);
+    const totalVertical = todayLogs.reduce((sum, log) => {
+      if (log.log_type === 'lift') {
+        return sum + (log.lifts?.vertical_ft || 0);
+      }
+      return sum;
+    }, 0);
 
     return (
       <div className="space-y-3">
@@ -471,34 +479,50 @@ export default function History() {
         </div>
 
         {/* Individual Runs */}
-        {todayLogs.map((log) => (
-          <GlassCard 
-            key={log.id}
-            className="p-4 transition-all hover:bg-white/10"
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-1">
-                  <h3 className="text-base font-semibold text-white" style={{ fontFamily: 'Manrope, sans-serif' }}>
-                    {log.runs?.name || 'Unknown Run'}
-                  </h3>
-                  {log.runs?.difficulty && (
-                    <DifficultyBadge difficulty={log.runs.difficulty} region={profile?.difficulty_region} />
-                  )}
-                </div>
-                <div className="flex items-center gap-4 text-sm" style={{ color: 'rgba(255,255,255,0.6)' }}>
-                  <span className="flex items-center gap-1" style={{ fontFamily: 'JetBrains Mono, monospace' }}>
-                    <TrendingUp size={14} />
-                    {(log.runs?.vertical_ft || 0).toLocaleString()} ft
-                  </span>
-                  <span className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>
-                    {format(new Date(log.logged_at), 'h:mm a')}
-                  </span>
+        {todayLogs.map((log) => {
+          const isLift = log.log_type === 'lift';
+          return (
+            <GlassCard
+              key={log.id}
+              className="p-4 transition-all hover:bg-white/10"
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    {isLift && (
+                      <span className="text-xs px-2 py-0.5 rounded-full" style={{
+                        backgroundColor: 'rgba(0, 180, 216, 0.2)',
+                        color: '#00B4D8',
+                        fontFamily: 'JetBrains Mono, monospace',
+                        fontWeight: 600
+                      }}>
+                        LIFT
+                      </span>
+                    )}
+                    <h3 className="text-base font-semibold text-white" style={{ fontFamily: 'Manrope, sans-serif' }}>
+                      {isLift ? (log.lifts?.name || 'Unknown Lift') : (log.runs?.name || 'Unknown Run')}
+                    </h3>
+                    {!isLift && log.runs?.difficulty && (
+                      <DifficultyBadge difficulty={log.runs.difficulty} region={profile?.difficulty_region} />
+                    )}
+                  </div>
+                  <div className="flex items-center gap-4 text-sm" style={{ color: 'rgba(255,255,255,0.6)' }}>
+                    <span className="flex items-center gap-1" style={{ fontFamily: 'JetBrains Mono, monospace' }}>
+                      <TrendingUp size={14} />
+                      {isLift
+                        ? `+${(log.lifts?.vertical_ft || 0).toLocaleString()} ft`
+                        : `${(log.runs?.vertical_ft || 0).toLocaleString()} ft`
+                      }
+                    </span>
+                    <span className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>
+                      {format(new Date(log.logged_at), 'h:mm a')}
+                    </span>
+                  </div>
                 </div>
               </div>
-            </div>
-          </GlassCard>
-        ))}
+            </GlassCard>
+          );
+        })}
       </div>
     );
   };
@@ -568,7 +592,12 @@ export default function History() {
                     </span>
                     <span className="flex items-center gap-1" style={{ fontFamily: 'JetBrains Mono, monospace' }}>
                       <TrendingUp size={14} />
-                      {filteredDayLogs.reduce((sum, log) => sum + (log.runs?.vertical_ft || 0), 0).toLocaleString()} ft
+                      {filteredDayLogs.reduce((sum, log) => {
+                        if (log.log_type === 'lift') {
+                          return sum + (log.lifts?.vertical_ft || 0);
+                        }
+                        return sum;
+                      }, 0).toLocaleString()} ft
                     </span>
                   </div>
                 </div>
