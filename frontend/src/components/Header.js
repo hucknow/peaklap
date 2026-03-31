@@ -7,7 +7,7 @@ import { GlassCard } from './GlassCard';
 import { ResortSelector } from './ResortSelector';
 
 // Consistent logo URL used across the app
-const LOGO_URL = 'https://customer-assets.emergentagent.com/job_code-review-preview/artifacts/18r8cfx3_PeakLap_Logo_dark.png';
+const LOGO_URL = '/PeakLap_Logo.png';
 
 export function Header() {
   const { user, profile, signOut } = useAuth();

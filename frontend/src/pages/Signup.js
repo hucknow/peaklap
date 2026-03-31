@@ -6,7 +6,7 @@ import Footer from '@/components/Footer';
 import { Eye, EyeOff, CircleCheck as CheckCircle, CircleAlert as AlertCircle, Mail, Coffee } from 'lucide-react';
 
 // Consistent logo URL used across the app
-const LOGO_URL = 'https://customer-assets.emergentagent.com/job_code-review-preview/artifacts/18r8cfx3_PeakLap_Logo_dark.png';
+const LOGO_URL = '/PeakLap_Logo.png';
 
 export default function Signup() {
   const [email, setEmail] = useState('');

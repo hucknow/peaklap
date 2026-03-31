@@ -28,7 +28,7 @@ function LoadingScreen() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center" style={{ backgroundColor: '#12181B' }}>
       <img 
-        src="https://customer-assets.emergentagent.com/job_code-review-preview/artifacts/18r8cfx3_PeakLap_Logo_dark.png"
+        src="/src/PeakLap_Logo.png"
         alt="PeakLap Logo"
         className="h-16 w-16 mb-4 animate-pulse"
       />
