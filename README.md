@@ -126,12 +126,32 @@ WHERE id = 'user-id-here';
 
 ## Database Setup
 
-1. Create a Supabase project
-2. Run migrations in order:
-   - `001_base_schema.sql` - Core tables and RLS
-   - `002_openskidata_schema_update.sql` - Admin system
-3. Load seed data: `whistler_seed_data.sql`
-4. Make your user an admin (see above)
+### 1. Run Missing Tables & Base Schema
+1. Open your Supabase Dashboard and go to the **SQL Editor**.
+2. Click **New query** and run `001_base_schema.sql` (or `supabase_missing_tables.sql`).
+   *This creates the core tables (`profiles`, `user_logs`, `bucket_list`, `waitlist`), enables PostGIS, and sets up RLS policies.*
+
+### 2. Run Schema Updates
+1. Create a new query and run `002_openskidata_schema_update.sql` to set up the Admin system.
+
+### 3. Load Seed Data
+1. Click **New query**, paste the contents of `whistler_seed_data.sql`, and click **Run**.
+   *This loads 40 runs, 10 lifts, and 8 POIs for Whistler Blackcomb.*
+
+### 4. Verify Setup
+Run this verification query to ensure everything loaded correctly:
+```sql
+SELECT 
+  (SELECT COUNT(*) FROM ski_areas) as ski_areas,
+  (SELECT COUNT(*) FROM lifts) as lifts,
+  (SELECT COUNT(*) FROM runs) as runs,
+  (SELECT COUNT(*) FROM points_of_interest) as pois,
+  (SELECT COUNT(*) FROM profiles) as profiles;
+```
+*Expected results: ski_areas: 1, lifts: 10, runs: 40, pois: 8, profiles: 0*
+
+### 5. Make Your User an Admin
+After signing up in the app, run the SQL command from the **Making a User Admin** section above.
 
 ## Testing
 

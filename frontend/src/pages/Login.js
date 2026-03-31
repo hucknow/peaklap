@@ -8,6 +8,27 @@ import { Eye, EyeOff, CircleAlert as AlertCircle, Info, Coffee } from 'lucide-re
 // Consistent logo URL used across the app
 const LOGO_URL = 'https://customer-assets.emergentagent.com/job_code-review-preview/artifacts/18r8cfx3_PeakLap_Logo_dark.png';
 
+// Static styles extracted outside component to prevent re-renders and garbage collection overhead
+const PAGE_CONTAINER_STYLE = { backgroundColor: '#12181B' };
+const LOGO_LINK_STYLE = { textDecoration: 'none', border: 'none' };
+const HEADER_TEXT_STYLE = { fontFamily: 'Manrope, sans-serif' };
+const SUB_TEXT_STYLE = { color: 'rgba(255,255,255,0.6)' };
+const MSG_ICON_STYLE = { color: '#FF5252' };
+const MSG_INFO_ICON_STYLE = { color: '#00B4D8' };
+const MSG_INFO_TEXT_STYLE = { color: '#00B4D8', fontFamily: 'Manrope, sans-serif' };
+const MSG_ERR_TEXT_STYLE = { color: '#FF5252', fontFamily: 'Manrope, sans-serif' };
+const MSG_SUBTEXT_STYLE = { color: 'rgba(255,255,255,0.5)' };
+const SUCCESS_ICON_STYLE = { color: '#00E676' };
+const SUCCESS_TEXT_STYLE = { color: '#00E676', fontFamily: 'Manrope, sans-serif' };
+const INPUT_STYLE = { backgroundColor: '#1A2126', border: '1px solid rgba(255,255,255,0.1)', color: 'white' };
+const BUTTON_BASE_STYLE = { 
+  background: 'linear-gradient(135deg, #00B4D8 0%, #0077B6 100%)', 
+  color: '#000000', 
+  fontFamily: 'Manrope, sans-serif', 
+  boxShadow: '0 4px 20px rgba(0, 180, 216, 0.3)' 
+};
+const SUPPORT_LINK_STYLE = { color: 'rgba(255,255,255,0.5)', textDecoration: 'none' };
+
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -52,14 +73,14 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4" style={{ backgroundColor: '#12181B' }}>
+    <div className="min-h-screen flex flex-col items-center justify-center p-4" style={PAGE_CONTAINER_STYLE}>
       <div className="w-full max-w-md">
         {/* Hero Logo */}
         <div className="flex justify-center mb-8">
           <Link 
             to="/home" 
             className="transition-opacity hover:opacity-85"
-            style={{ textDecoration: 'none', border: 'none' }}
+            style={LOGO_LINK_STYLE}
           >
             <img 
               src={LOGO_URL}
@@ -70,10 +91,10 @@ export default function Login() {
         </div>
 
         <GlassCard className="p-8">
-          <h1 className="text-3xl font-bold mb-2 text-white text-center" style={{ fontFamily: 'Manrope, sans-serif' }}>
+          <h1 className="text-3xl font-bold mb-2 text-white text-center" style={HEADER_TEXT_STYLE}>
             Back for more laps?
           </h1>
-          <p className="text-sm mb-6 text-center" style={{ color: 'rgba(255,255,255,0.6)' }}>
+          <p className="text-sm mb-6 text-center" style={SUB_TEXT_STYLE}>
             Your mountain. Your laps. Your legacy.
           </p>
 
@@ -86,22 +107,19 @@ export default function Login() {
               data-testid="auth-message"
             >
               {message.type === 'error' ? (
-                <AlertCircle size={24} className="flex-shrink-0 mt-0.5" style={{ color: '#FF5252' }} />
+                <AlertCircle size={24} className="flex-shrink-0 mt-0.5" style={MSG_ICON_STYLE} />
               ) : (
-                <Info size={24} className="flex-shrink-0 mt-0.5" style={{ color: '#00B4D8' }} />
+                <Info size={24} className="flex-shrink-0 mt-0.5" style={MSG_INFO_ICON_STYLE} />
               )}
               <div className="flex-1">
                 <p 
                   className="text-sm font-medium"
-                  style={{ 
-                    color: message.type === 'error' ? '#FF5252' : '#00B4D8',
-                    fontFamily: 'Manrope, sans-serif'
-                  }}
+                  style={message.type === 'error' ? MSG_ERR_TEXT_STYLE : MSG_INFO_TEXT_STYLE}
                 >
                   {message.text}
                 </p>
                 {message.type === 'error' && message.text.includes('verify') && (
-                  <p className="text-xs mt-2" style={{ color: 'rgba(255,255,255,0.5)' }}>
+                  <p className="text-xs mt-2" style={MSG_SUBTEXT_STYLE}>
                     Check your inbox and spam folder for the verification email.
                   </p>
                 )}
@@ -115,13 +133,10 @@ export default function Login() {
               className="mb-6 p-4 rounded-xl flex items-start gap-3 bg-green-500/10 border border-green-500/30"
               data-testid="signup-success-banner"
             >
-              <Info size={24} className="flex-shrink-0 mt-0.5" style={{ color: '#00E676' }} />
+              <Info size={24} className="flex-shrink-0 mt-0.5" style={SUCCESS_ICON_STYLE} />
               <p 
                 className="text-sm font-medium"
-                style={{ 
-                  color: '#00E676',
-                  fontFamily: 'Manrope, sans-serif'
-                }}
+                style={SUCCESS_TEXT_STYLE}
               >
                 Account created! Please check your email to verify before signing in.
               </p>
@@ -130,7 +145,7 @@ export default function Login() {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium mb-2 text-white" style={{ fontFamily: 'Manrope, sans-serif' }}>
+              <label className="block text-sm font-medium mb-2 text-white" style={HEADER_TEXT_STYLE}>
                 Email
               </label>
               <input
@@ -140,17 +155,13 @@ export default function Login() {
                 onChange={(e) => { setEmail(e.target.value); setMessage(null); }}
                 required
                 className="w-full px-4 py-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-[#00B4D8]"
-                style={{
-                  backgroundColor: '#1A2126',
-                  border: '1px solid rgba(255,255,255,0.1)',
-                  color: 'white'
-                }}
+                style={INPUT_STYLE}
                 placeholder="your.email@example.com"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-2 text-white" style={{ fontFamily: 'Manrope, sans-serif' }}>
+              <label className="block text-sm font-medium mb-2 text-white" style={HEADER_TEXT_STYLE}>
                 Password
               </label>
               <div className="relative">
@@ -161,18 +172,14 @@ export default function Login() {
                   onChange={(e) => { setPassword(e.target.value); setMessage(null); }}
                   required
                   className="w-full px-4 py-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-[#00B4D8] pr-12"
-                  style={{
-                    backgroundColor: '#1A2126',
-                    border: '1px solid rgba(255,255,255,0.1)',
-                    color: 'white'
-                  }}
+                  style={INPUT_STYLE}
                   placeholder="••••••••"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 p-1"
-                  style={{ color: 'rgba(255,255,255,0.5)' }}
+                  style={MSG_SUBTEXT_STYLE}
                   data-testid="toggle-password"
                 >
                   {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
@@ -185,20 +192,14 @@ export default function Login() {
               type="submit"
               disabled={loading}
               className="w-full py-3 rounded-full font-semibold transition-all mt-2"
-              style={{
-                background: 'linear-gradient(135deg, #00B4D8 0%, #0077B6 100%)',
-                color: '#000000',
-                fontFamily: 'Manrope, sans-serif',
-                opacity: loading ? 0.7 : 1,
-                boxShadow: '0 4px 20px rgba(0, 180, 216, 0.3)'
-              }}
+              style={{ ...BUTTON_BASE_STYLE, opacity: loading ? 0.7 : 1 }}
             >
               {loading ? 'Signing in...' : 'Sign In'}
             </button>
           </form>
 
           <div className="mt-6 text-center">
-            <p className="text-sm" style={{ color: 'rgba(255,255,255,0.6)' }}>
+            <p className="text-sm" style={SUB_TEXT_STYLE}>
               Don't have an account?{' '}
               <Link to="/signup" className="font-semibold" style={{ color: '#00B4D8' }}>
                 Sign up
@@ -213,7 +214,7 @@ export default function Login() {
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 text-sm transition-opacity hover:opacity-80"
-              style={{ color: 'rgba(255,255,255,0.5)', textDecoration: 'none' }}
+              style={SUPPORT_LINK_STYLE}
             >
               <Coffee size={16} style={{ color: '#FFDD57' }} />
               <span>Support PeakLap</span>

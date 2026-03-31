@@ -9,7 +9,6 @@ import { RunChecklist } from '@/components/RunChecklist';
 import { RunDetailSheet } from '@/components/RunDetailSheet';
 import { OfflineBanner } from '@/components/OfflineBanner';
 import { TrailMap } from '@/components/TrailMap';
-import { UnifiedFilterBar } from '@/components/UnifiedFilterBar';
 import { DifficultyBadge } from '@/components/DifficultyBadge';
 import { supabase } from '@/lib/supabase';
 import { useRunChecklist, useSyncQueue, useOnlineStatus } from '@/lib/hooks';
@@ -461,6 +460,9 @@ export default function LogRun() {
         {/* Scoutable Trail Map - Scout before selecting a run */}
         {selectedResort && (
           <div className="mb-4">
+            <h2 className="text-lg font-bold text-white mb-3" style={{ fontFamily: 'Manrope, sans-serif' }}>
+              Trail Map
+            </h2>
             <TrailMap
               resort={selectedResort}
               minHeight={280}

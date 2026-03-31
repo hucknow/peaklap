@@ -345,6 +345,9 @@ export default function Resorts() {
 
         {selectedResort && (
           <div className="mb-4">
+            <h2 className="text-lg font-bold text-white mb-3" style={{ fontFamily: 'Manrope, sans-serif' }}>
+              Trail Map
+            </h2>
             <TrailMap 
               resort={selectedResort}
               minHeight={300}

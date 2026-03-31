@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useResort } from '@/contexts/ResortContext';
 import { Header } from '@/components/Header';
@@ -10,18 +11,37 @@ import { DaySummary } from '@/components/DaySummary';
 import { TrailMap } from '@/components/TrailMap';
 import { StatsSection } from '@/components/StatsSection';
 import { OfflineBanner } from '@/components/OfflineBanner';
-import { UnifiedFilterBar } from '@/components/UnifiedFilterBar';
 import { supabase } from '@/lib/supabase';
 import { useDaySummary } from '@/lib/hooks';
 import { offlineStorage } from '@/lib/offline';
 import { getNetworkStatus } from '@/lib/platform';
 import { format, parseISO, isToday as checkIsToday, startOfDay, endOfDay } from 'date-fns';
-import { Trash2, Calendar, TrendingUp, Mountain, ChevronRight, Star, ChevronDown, CreditCard as Edit, CreditCard as Edit2, X, GripVertical } from 'lucide-react';
+import { Trash2, Calendar, TrendingUp, Mountain, ChevronRight, Star, ChevronDown, CreditCard as Edit, CreditCard as Edit2, X, GripVertical, Search } from 'lucide-react';
 import { toast } from 'sonner';
+
+function FilterChip({ label, active, onClick, color }) {
+  return (
+    <button
+      onClick={onClick}
+      className="px-3 py-1.5 rounded-full text-xs font-medium transition-all"
+      style={{
+        backgroundColor: active ? (color || '#00B4D8') : 'rgba(255,255,255,0.05)',
+        color: active ? (color === '#000000' ? '#FFFFFF' : '#000000') : 'rgba(255,255,255,0.7)',
+        border: `1px solid ${active ? (color || '#00B4D8') : 'rgba(255,255,255,0.08)'}`,
+        fontFamily: 'Manrope, sans-serif'
+      }}
+    >
+      {label}
+    </button>
+  );
+}
 
 export default function History() {
   const { profile } = useAuth();
   const { selectedResort } = useResort();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const incomingDate = location.state?.selectedDate;
   const [period, setPeriod] = useState('season'); // Controls both KPIs and history list
   const [groupedLogs, setGroupedLogs] = useState({});
   const [todayLogs, setTodayLogs] = useState([]);
@@ -231,6 +251,15 @@ export default function History() {
     }
   }, [profile]);
 
+  const handleDayClick = useCallback((dateStr) => {
+    setSelectedDate(parseISO(dateStr));
+    setShowDaySummary(true);
+  }, []);
+
+  useEffect(() => {
+    loadDaySummaries();
+  }, [loadDaySummaries]);
+
   useEffect(() => {
     if (profile) {
       loadGroupedLogs();
@@ -239,11 +268,14 @@ export default function History() {
       loadDaySummaries();
     }
   }, [profile, loadGroupedLogs, loadTodayLogs, loadLifetimeRuns, loadDaySummaries]);
-
-  const handleDayClick = (dateStr) => {
-    setSelectedDate(parseISO(dateStr));
-    setShowDaySummary(true);
-  };
+  
+  useEffect(() => {
+    if (incomingDate) {
+      handleDayClick(incomingDate);
+      // Clear the state so it doesn't re-trigger on navigation
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [incomingDate, handleDayClick, navigate, location.pathname]);
 
   const handleSaveDaySummary = async (title, notes) => {
     return await daySummaryData.saveSummary(title, notes);
@@ -955,22 +987,42 @@ export default function History() {
           </button>
         </div>
 
-        {/* Unified Filter Bar */}
-        <div className="mb-4">
-          <UnifiedFilterBar
-            searchQuery={searchQuery}
-            onSearchChange={setSearchQuery}
-            selectedDifficulty={selectedDifficulty}
-            onDifficultyChange={setSelectedDifficulty}
-            selectedType={selectedType}
-            onTypeChange={setSelectedType}
-            showMountainFilter={false}
-            showDifficultyFilter={true}
-            showTypeFilter={true}
-            showHistoryFilter={false}
-            region={profile?.difficulty_region}
+        {/* Search Bar */}
+        <div className="relative mb-4">
+          <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'rgba(255,255,255,0.4)' }} />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search runs..."
+            className="w-full pl-10 pr-4 py-3 rounded-xl text-sm text-white border-0 outline-none"
+            style={{
+              backgroundColor: 'rgba(255,255,255,0.05)',
+              fontFamily: 'Manrope, sans-serif',
+              border: '1px solid rgba(255,255,255,0.08)'
+            }}
           />
+        </div>
+
+        {/* Filter Chips - Difficulty */}
+        <div className="mb-3">
+          <div className="flex flex-wrap gap-2">
+            <FilterChip label="All" active={selectedDifficulty === 'all'} onClick={() => setSelectedDifficulty('all')} />
+            <FilterChip label="Green" active={selectedDifficulty === 'green'} onClick={() => setSelectedDifficulty(selectedDifficulty === 'green' ? 'all' : 'green')} color="#4CAF50" />
+            <FilterChip label="Blue" active={selectedDifficulty === 'blue'} onClick={() => setSelectedDifficulty(selectedDifficulty === 'blue' ? 'all' : 'blue')} color="#2196F3" />
+            <FilterChip label="Black" active={selectedDifficulty === 'black'} onClick={() => setSelectedDifficulty(selectedDifficulty === 'black' ? 'all' : 'black')} color="#000000" />
+            <FilterChip label="Double Black ◆◆" active={selectedDifficulty === 'double-black'} onClick={() => setSelectedDifficulty(selectedDifficulty === 'double-black' ? 'all' : 'double-black')} color="#000000" />
+          </div>
+        </div>
+
+        {/* Filter Chips - Type */}
+        <div className="mb-4">
+          <div className="flex flex-wrap gap-2">
+            <FilterChip label="All" active={selectedType === 'all'} onClick={() => setSelectedType('all')} />
+            <FilterChip label="Groomed" active={selectedType === 'groomed'} onClick={() => setSelectedType(selectedType === 'groomed' ? 'all' : 'groomed')} />
+            <FilterChip label="Moguls" active={selectedType === 'moguls'} onClick={() => setSelectedType(selectedType === 'moguls' ? 'all' : 'moguls')} />
+            <FilterChip label="Trees" active={selectedType === 'trees'} onClick={() => setSelectedType(selectedType === 'trees' ? 'all' : 'trees')} />
+          </div>
         </div>
 
         {/* Stats Section with Toggle (controlled by History page) */}
@@ -987,6 +1039,9 @@ export default function History() {
         {/* Trail Map */}
         {selectedResort && (
           <div className="mb-6">
+            <h2 className="text-lg font-bold text-white mb-3" style={{ fontFamily: 'Manrope, sans-serif' }}>
+              Trail Map
+            </h2>
             <TrailMap 
               resort={selectedResort}
               minHeight={250}

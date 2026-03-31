@@ -8,13 +8,13 @@ import Footer from '@/components/Footer';
 import { GlassCard } from '@/components/GlassCard';
 import { SnowStake, SnowStakeCompact } from '@/components/SnowStake';
 import { DifficultyBadge } from '@/components/DifficultyBadge';
-import { TrailMap } from '@/components/TrailMap';
+import CalendarView from '@/components/CalendarView';
 import { StatsSection } from '@/components/StatsSection';
 import { OfflineBanner } from '@/components/OfflineBanner';
 import { supabase } from '@/lib/supabase';
 import { offlineStorage, getCachedSeasonStats, cacheSeasonStats } from '@/lib/offline';
 import { getNetworkStatus } from '@/lib/platform';
-import { format } from 'date-fns';
+import { format, startOfDay } from 'date-fns';
 import { Heart, Mountain, TrendingUp, MapPin, Snowflake, Plus } from 'lucide-react';
 
 export default function Home() {
@@ -23,6 +23,7 @@ export default function Home() {
   const navigate = useNavigate();
   const [stats, setStats] = useState({ daysLogged: 0, verticalLogged: 0, completionPercent: 0, totalRuns: 0, completedRuns: 0 });
   const [bucketList, setBucketList] = useState([]);
+  const [loggedDays, setLoggedDays] = useState(new Set());
   const [recentActivity, setRecentActivity] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   
@@ -53,7 +54,7 @@ export default function Home() {
         // Build query - filter by selected resort if available
         let logsQuery = supabase
           .from('user_logs')
-          .select('run_id, runs(vertical_ft, ski_area_id)')
+          .select('run_id, log_type, logged_at, runs(vertical_ft, ski_area_id), lifts(vertical_ft)')
           .eq('user_id', profile.id);
 
         if (selectedResort?.id) {
@@ -70,8 +71,17 @@ export default function Home() {
         const { data: allRuns } = await runsQuery;
 
         if (logs && allRuns) {
-          const uniqueRunIds = new Set(logs.map(l => l.run_id));
-          const totalVertical = logs.reduce((sum, log) => sum + (log.runs?.vertical_ft || 0), 0);
+          // Populate loggedDays for calendar
+          const uniqueDays = new Set(logs.map(log => format(startOfDay(new Date(log.logged_at)), 'yyyy-MM-dd')));
+          setLoggedDays(uniqueDays);
+
+          const uniqueRunIds = new Set(logs.filter(l => l.run_id).map(l => l.run_id));
+          const totalVertical = logs.reduce((sum, log) => {
+            if (log.log_type === 'lift') {
+              return sum + (log.lifts?.vertical_ft || 0);
+            }
+            return sum;
+          }, 0);
           const completedRuns = uniqueRunIds.size;
           const totalRuns = allRuns.length;
           const completionPercent = totalRuns > 0 ? Math.round((completedRuns / totalRuns) * 100) : 0;
@@ -130,7 +140,7 @@ export default function Home() {
     try {
       let query = supabase
         .from('user_logs')
-        .select('*, runs(name, difficulty)')
+        .select('*, runs(name, difficulty), lifts(name), log_type')
         .eq('user_id', profile.id)
         .order('logged_at', { ascending: false })
         .limit(5);
@@ -160,6 +170,11 @@ export default function Home() {
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profile?.id, selectedResort?.id]); // Only depend on primitive ids
+
+  // Handle calendar day click
+  const handleCalendarDayClick = (date) => {
+    navigate('/history', { state: { selectedDate: date.toISOString() } });
+  };
 
   // Empty State Component
   const EmptyStateHero = () => (
@@ -292,21 +307,13 @@ export default function Home() {
             />
           </div>
 
-          {/* Trail Map Section */}
-          {selectedResort && (
-            <div className="px-6 py-4">
-              <h2 className="text-lg font-bold text-white mb-3" style={{ fontFamily: 'Manrope, sans-serif' }}>
-                Trail Map
-              </h2>
-              <TrailMap 
-                resort={selectedResort}
-                minHeight={280}
-                maxHeight={450}
-                labelText={selectedResort.name}
-                focusZone={recentActivity[0]?.runs?.zone || null}
-              />
-            </div>
-          )}
+          {/* Calendar View Section */}
+          <div className="px-6 py-4">
+            <h2 className="text-lg font-bold text-white mb-3" style={{ fontFamily: 'Manrope, sans-serif' }}>
+              Your Season
+            </h2>
+            <CalendarView loggedDays={loggedDays} onDayClick={handleCalendarDayClick} />
+          </div>
         </>
       )}
 
@@ -388,10 +395,13 @@ export default function Home() {
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
                     <h3 className="text-sm font-semibold text-white mb-1" style={{ fontFamily: 'Manrope, sans-serif' }}>
-                      {log.runs?.name || 'Unknown Run'}
+                      {log.log_type === 'lift' ? (log.lifts?.name || 'Unknown Lift') : (log.runs?.name || 'Unknown Run')}
                     </h3>
                     <div className="flex items-center gap-2">
-                      {log.runs?.difficulty && (
+                      {log.log_type === 'lift' && (
+                        <span className="text-[10px] px-2 py-0.5 rounded-full" style={{ backgroundColor: 'rgba(0, 180, 216, 0.2)', color: '#00B4D8', fontFamily: 'JetBrains Mono, monospace', fontWeight: 600 }}>LIFT</span>
+                      )}
+                      {log.log_type !== 'lift' && log.runs?.difficulty && (
                         <DifficultyBadge difficulty={log.runs.difficulty} region={profile?.difficulty_region} />
                       )}
                       <span className="text-xs" style={{ color: 'rgba(255,255,255,0.5)', fontFamily: 'JetBrains Mono, monospace' }}>

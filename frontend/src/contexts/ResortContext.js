@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useAuth } from './AuthContext';
 import { supabase } from '@/lib/supabase';
 import { offlineStorage, checkOnlineStatus, getCurrentPosition } from '@/lib/offline';
@@ -360,32 +360,38 @@ export function ResortProvider({ children }) {
   // Check if user is at a different resort than their primary
   const isAtDifferentResort = selectedResort?.id && primaryResort?.id && selectedResort.id !== primaryResort.id;
 
+  const contextValue = useMemo(() => ({
+    // Core state
+    selectedResort,        // Current resort (where user is skiing now)
+    setSelectedResort,     // Set current resort
+    primaryResort,         // Home mountain (user's preference)
+    loading,
+
+    // GPS detection
+    detectedResort,
+    isDetecting,
+    detectResort,
+
+    // Resort lists
+    allResorts,
+    recentResorts,
+    myResorts,
+
+    // Utility
+    isAtDifferentResort,   // True if user is at a different resort than primary
+    clearCurrentResort,    // Reset to primary resort
+
+    // Refresh functions
+    loadResorts,
+    loadUserResorts
+  }), [
+    selectedResort, primaryResort, loading, detectedResort, isDetecting, 
+    allResorts, recentResorts, myResorts, isAtDifferentResort, 
+    setSelectedResort, detectResort, clearCurrentResort, loadResorts, loadUserResorts
+  ]);
+
   return (
-    <ResortContext.Provider value={{
-      // Core state
-      selectedResort,        // Current resort (where user is skiing now)
-      setSelectedResort,     // Set current resort
-      primaryResort,         // Home mountain (user's preference)
-      loading,
-
-      // GPS detection
-      detectedResort,
-      isDetecting,
-      detectResort,
-
-      // Resort lists
-      allResorts,
-      recentResorts,
-      myResorts,
-
-      // Utility
-      isAtDifferentResort,   // True if user is at a different resort than primary
-      clearCurrentResort,    // Reset to primary resort
-
-      // Refresh functions
-      loadResorts,
-      loadUserResorts
-    }}>
+    <ResortContext.Provider value={contextValue}>
       {children}
     </ResortContext.Provider>
   );

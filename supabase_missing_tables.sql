@@ -26,6 +26,7 @@ CREATE TABLE IF NOT EXISTS profiles (
   difficulty_region TEXT DEFAULT 'NA',
   onboarding_complete BOOLEAN DEFAULT false,
   is_premium BOOLEAN DEFAULT false,
+  daily_run_goal INTEGER DEFAULT 3,
   created_at TIMESTAMPTZ DEFAULT now()
 );
 
@@ -34,11 +35,14 @@ CREATE TABLE IF NOT EXISTS user_logs (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
   run_id UUID REFERENCES runs(id) ON DELETE SET NULL,
+  lift_id UUID REFERENCES lifts(id) ON DELETE SET NULL,
   poi_id UUID REFERENCES points_of_interest(id) ON DELETE SET NULL,
   ski_area_id UUID REFERENCES ski_areas(id) ON DELETE SET NULL,
+  parent_log_id UUID REFERENCES user_logs(id) ON DELETE SET NULL,
   logged_at TIMESTAMPTZ DEFAULT now(),
   snow_condition TEXT,
   notes TEXT,
+  log_type TEXT DEFAULT 'run',
   session_id UUID,
   created_at TIMESTAMPTZ DEFAULT now()
 );
@@ -61,6 +65,20 @@ CREATE TABLE IF NOT EXISTS waitlist (
   created_at TIMESTAMPTZ DEFAULT now()
 );
 
+-- User Proposals
+CREATE TABLE IF NOT EXISTS user_proposals (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES profiles(id),
+  proposal_type TEXT CHECK (proposal_type IN ('resort', 'run', 'lift')),
+  parent_id UUID REFERENCES ski_areas(id),
+  status TEXT CHECK (status IN ('pending', 'approved', 'rejected')),
+  data JSONB NOT NULL,
+  admin_notes TEXT,
+  reviewed_by UUID REFERENCES profiles(id),
+  reviewed_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
 -- ==========================================
 -- 3. CREATE INDEXES FOR PERFORMANCE
 -- ==========================================
@@ -68,6 +86,9 @@ CREATE TABLE IF NOT EXISTS waitlist (
 -- Indexes on user_logs for fast queries
 CREATE INDEX IF NOT EXISTS idx_user_logs_user_id ON user_logs(user_id);
 CREATE INDEX IF NOT EXISTS idx_user_logs_run_id ON user_logs(run_id);
+CREATE INDEX IF NOT EXISTS idx_user_logs_lift_id ON user_logs(lift_id);
+CREATE INDEX IF NOT EXISTS idx_user_logs_log_type ON user_logs(log_type);
+CREATE INDEX IF NOT EXISTS idx_user_logs_parent_log_id ON user_logs(parent_log_id);
 CREATE INDEX IF NOT EXISTS idx_user_logs_logged_at ON user_logs(logged_at DESC);
 
 -- Indexes on bucket_list
