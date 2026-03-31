@@ -2,6 +2,15 @@
 
 All notable changes to the PeakLap project will be documented in this file.
 
+## [0.6.0] - Home Page Calendar & UI Consistency
+### Added
+- **Home Page Calendar**: Replaced the trail map on the Home page with a 3-month interactive calendar view.
+- **Clickable Calendar Days**: Days with logged activity are highlighted and navigate to the History page for that specific day's summary.
+- **Calendar Navigation**: Added "Today", "Previous", and "Next" month navigation to the calendar.
+
+### Changed
+- **UI Consistency**: Added "Trail Map" titles to the Mountain, Log, and History pages to match the Home page layout.
+
 ## [0.5.2] - History & Snow Stake Fix
 ### Fixed
 - **History Page & KPIs**: Fixed vertical footage calculations to use the new lift-based tracking system exclusively.
