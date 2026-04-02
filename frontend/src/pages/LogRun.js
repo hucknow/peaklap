@@ -94,22 +94,35 @@ export default function LogRun() {
       }
 
       try {
-        const { data, error } = await supabase
-          .from('lifts')
-          .select('*')
-          .eq('ski_area_id', selectedResort.id)
-          .order('name');
+        // 1. Try to load from local cache first
+        const cachedLifts = await offlineStorage.getCachedLifts(selectedResort.id);
+        if (cachedLifts && cachedLifts.length > 0) {
+          setLifts(cachedLifts);
+        }
 
-        if (error) throw error;
-        setLifts(data || []);
+        // 2. Fetch fresh data from Supabase if online and update cache
+        if (isOnline) {
+          const { data, error } = await supabase
+            .from('lifts')
+            .select('*')
+            .eq('ski_area_id', selectedResort.id)
+            .order('name');
+
+          if (error) throw error;
+          if (data) {
+            setLifts(data);
+            await offlineStorage.cacheLifts(selectedResort.id, data);
+          }
+        }
       } catch (err) {
         console.error('Error loading lifts:', err);
-        setLifts([]);
+        // If we fail but already have cached data, don't clear it
+        setLifts(prev => prev.length > 0 ? prev : []);
       }
     };
 
     loadLifts();
-  }, [selectedResort?.id]);
+  }, [selectedResort?.id, isOnline]);
 
   // Handle lift logging
   const handleLogLift = useCallback(async (liftId) => {

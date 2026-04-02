@@ -1,0 +1,320 @@
+1<?xml version="1.0" encoding="utf-8"?>
+2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+3    package="com.peaklap.app"
+4    android:versionCode="1"
+5    android:versionName="1.0" >
+6
+7    <uses-sdk
+7-->INJECTED
+8        android:minSdkVersion="24"
+8-->INJECTED
+9        android:targetSdkVersion="36" />
+9-->INJECTED
+10
+11    <!-- Permissions -->
+12
+13    <uses-permission android:name="android.permission.INTERNET" />
+13-->C:\Users\james\OneDrive\Documents\AI\VSCode\Peaklap\peaklap-1\frontend\android\app\src\main\AndroidManifest.xml:34:5-67
+13-->C:\Users\james\OneDrive\Documents\AI\VSCode\Peaklap\peaklap-1\frontend\android\app\src\main\AndroidManifest.xml:34:22-64
+14    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+14-->[:capacitor-network] C:\Users\james\OneDrive\Documents\AI\VSCode\Peaklap\peaklap-1\frontend\node_modules\@capacitor\network\android\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:7:5-79
+14-->[:capacitor-network] C:\Users\james\OneDrive\Documents\AI\VSCode\Peaklap\peaklap-1\frontend\node_modules\@capacitor\network\android\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:7:22-76
+15    <uses-permission android:name="com.android.vending.BILLING" />
+15-->[com.android.billingclient:billing:8.0.0] C:\Users\james\.gradle\caches\9.3.1\transforms\6b27ea4729fa1344f92a7a985cb4fc8d\workspace\transformed\billing-8.0.0\AndroidManifest.xml:10:5-67
+15-->[com.android.billingclient:billing:8.0.0] C:\Users\james\.gradle\caches\9.3.1\transforms\6b27ea4729fa1344f92a7a985cb4fc8d\workspace\transformed\billing-8.0.0\AndroidManifest.xml:10:22-64
+16
+17    <queries>
+17-->[com.android.billingclient:billing:8.0.0] C:\Users\james\.gradle\caches\9.3.1\transforms\6b27ea4729fa1344f92a7a985cb4fc8d\workspace\transformed\billing-8.0.0\AndroidManifest.xml:12:5-19:15
+18        <intent>
+18-->[com.android.billingclient:billing:8.0.0] C:\Users\james\.gradle\caches\9.3.1\transforms\6b27ea4729fa1344f92a7a985cb4fc8d\workspace\transformed\billing-8.0.0\AndroidManifest.xml:13:9-15:18
+19            <action android:name="com.android.vending.billing.InAppBillingService.BIND" />
+19-->[com.android.billingclient:billing:8.0.0] C:\Users\james\.gradle\caches\9.3.1\transforms\6b27ea4729fa1344f92a7a985cb4fc8d\workspace\transformed\billing-8.0.0\AndroidManifest.xml:14:13-91
+19-->[com.android.billingclient:billing:8.0.0] C:\Users\james\.gradle\caches\9.3.1\transforms\6b27ea4729fa1344f92a7a985cb4fc8d\workspace\transformed\billing-8.0.0\AndroidManifest.xml:14:21-88
+20        </intent>
+21        <intent>
+21-->[com.android.billingclient:billing:8.0.0] C:\Users\james\.gradle\caches\9.3.1\transforms\6b27ea4729fa1344f92a7a985cb4fc8d\workspace\transformed\billing-8.0.0\AndroidManifest.xml:16:9-18:18
+22            <action android:name="com.google.android.apps.play.billingtestcompanion.BillingOverrideService.BIND" />
+22-->[com.android.billingclient:billing:8.0.0] C:\Users\james\.gradle\caches\9.3.1\transforms\6b27ea4729fa1344f92a7a985cb4fc8d\workspace\transformed\billing-8.0.0\AndroidManifest.xml:17:13-116
+22-->[com.android.billingclient:billing:8.0.0] C:\Users\james\.gradle\caches\9.3.1\transforms\6b27ea4729fa1344f92a7a985cb4fc8d\workspace\transformed\billing-8.0.0\AndroidManifest.xml:17:21-113
+23        </intent>
+24    </queries>
+25
+26    <permission
+26-->[androidx.core:core:1.17.0] C:\Users\james\.gradle\caches\9.3.1\transforms\d06b2194c63f8214b33dad5ff0ab1d56\workspace\transformed\core-1.17.0\AndroidManifest.xml:22:5-24:47
+27        android:name="com.peaklap.app.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+27-->[androidx.core:core:1.17.0] C:\Users\james\.gradle\caches\9.3.1\transforms\d06b2194c63f8214b33dad5ff0ab1d56\workspace\transformed\core-1.17.0\AndroidManifest.xml:23:9-81
+28        android:protectionLevel="signature" />
+28-->[androidx.core:core:1.17.0] C:\Users\james\.gradle\caches\9.3.1\transforms\d06b2194c63f8214b33dad5ff0ab1d56\workspace\transformed\core-1.17.0\AndroidManifest.xml:24:9-44
+29
+30    <uses-permission android:name="com.peaklap.app.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" />
+30-->[androidx.core:core:1.17.0] C:\Users\james\.gradle\caches\9.3.1\transforms\d06b2194c63f8214b33dad5ff0ab1d56\workspace\transformed\core-1.17.0\AndroidManifest.xml:26:5-97
+30-->[androidx.core:core:1.17.0] C:\Users\james\.gradle\caches\9.3.1\transforms\d06b2194c63f8214b33dad5ff0ab1d56\workspace\transformed\core-1.17.0\AndroidManifest.xml:26:22-94
+31
+32    <application
+32-->C:\Users\james\OneDrive\Documents\AI\VSCode\Peaklap\peaklap-1\frontend\android\app\src\main\AndroidManifest.xml:3:5-30:19
+33        android:allowBackup="true"
+33-->C:\Users\james\OneDrive\Documents\AI\VSCode\Peaklap\peaklap-1\frontend\android\app\src\main\AndroidManifest.xml:4:9-35
+34        android:appComponentFactory="androidx.core.app.CoreComponentFactory"
+34-->[androidx.core:core:1.17.0] C:\Users\james\.gradle\caches\9.3.1\transforms\d06b2194c63f8214b33dad5ff0ab1d56\workspace\transformed\core-1.17.0\AndroidManifest.xml:28:18-86
+35        android:debuggable="true"
+36        android:extractNativeLibs="false"
+36-->INJECTED
+37        android:icon="@mipmap/ic_launcher"
+37-->C:\Users\james\OneDrive\Documents\AI\VSCode\Peaklap\peaklap-1\frontend\android\app\src\main\AndroidManifest.xml:5:9-43
+38        android:label="@string/app_name"
+38-->C:\Users\james\OneDrive\Documents\AI\VSCode\Peaklap\peaklap-1\frontend\android\app\src\main\AndroidManifest.xml:6:9-41
+39        android:roundIcon="@mipmap/ic_launcher_round"
+39-->C:\Users\james\OneDrive\Documents\AI\VSCode\Peaklap\peaklap-1\frontend\android\app\src\main\AndroidManifest.xml:7:9-54
+40        android:supportsRtl="true"
+40-->C:\Users\james\OneDrive\Documents\AI\VSCode\Peaklap\peaklap-1\frontend\android\app\src\main\AndroidManifest.xml:8:9-35
+41        android:testOnly="true"
+42        android:theme="@style/AppTheme" >
+42-->C:\Users\james\OneDrive\Documents\AI\VSCode\Peaklap\peaklap-1\frontend\android\app\src\main\AndroidManifest.xml:9:9-40
+43        <activity
+43-->C:\Users\james\OneDrive\Documents\AI\VSCode\Peaklap\peaklap-1\frontend\android\app\src\main\AndroidManifest.xml:10:9-21:20
+44            android:name="com.peaklap.app.MainActivity"
+44-->C:\Users\james\OneDrive\Documents\AI\VSCode\Peaklap\peaklap-1\frontend\android\app\src\main\AndroidManifest.xml:12:13-41
+45            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|smallestScreenSize|screenLayout|uiMode|navigation|density"
+45-->C:\Users\james\OneDrive\Documents\AI\VSCode\Peaklap\peaklap-1\frontend\android\app\src\main\AndroidManifest.xml:11:13-148
+46            android:exported="true"
+46-->C:\Users\james\OneDrive\Documents\AI\VSCode\Peaklap\peaklap-1\frontend\android\app\src\main\AndroidManifest.xml:16:13-36
+47            android:label="@string/title_activity_main"
+47-->C:\Users\james\OneDrive\Documents\AI\VSCode\Peaklap\peaklap-1\frontend\android\app\src\main\AndroidManifest.xml:13:13-56
+48            android:launchMode="singleTask"
+48-->C:\Users\james\OneDrive\Documents\AI\VSCode\Peaklap\peaklap-1\frontend\android\app\src\main\AndroidManifest.xml:15:13-44
+49            android:theme="@style/AppTheme.NoActionBarLaunch" >
+49-->C:\Users\james\OneDrive\Documents\AI\VSCode\Peaklap\peaklap-1\frontend\android\app\src\main\AndroidManifest.xml:14:13-62
+50            <intent-filter>
+50-->C:\Users\james\OneDrive\Documents\AI\VSCode\Peaklap\peaklap-1\frontend\android\app\src\main\AndroidManifest.xml:17:13-20:29
+51                <action android:name="android.intent.action.MAIN" />
+51-->C:\Users\james\OneDrive\Documents\AI\VSCode\Peaklap\peaklap-1\frontend\android\app\src\main\AndroidManifest.xml:18:17-69
+51-->C:\Users\james\OneDrive\Documents\AI\VSCode\Peaklap\peaklap-1\frontend\android\app\src\main\AndroidManifest.xml:18:25-66
+52
+53                <category android:name="android.intent.category.LAUNCHER" />
+53-->C:\Users\james\OneDrive\Documents\AI\VSCode\Peaklap\peaklap-1\frontend\android\app\src\main\AndroidManifest.xml:19:17-77
+53-->C:\Users\james\OneDrive\Documents\AI\VSCode\Peaklap\peaklap-1\frontend\android\app\src\main\AndroidManifest.xml:19:27-74
+54            </intent-filter>
+55        </activity>
+56
+57        <provider
+57-->INJECTED
+58            android:name="androidx.core.content.FileProvider"
+58-->C:\Users\james\OneDrive\Documents\AI\VSCode\Peaklap\peaklap-1\frontend\android\app\src\main\AndroidManifest.xml:24:13-62
+59            android:authorities="com.peaklap.app.fileprovider"
+59-->INJECTED
+60            android:exported="false"
+60-->C:\Users\james\OneDrive\Documents\AI\VSCode\Peaklap\peaklap-1\frontend\android\app\src\main\AndroidManifest.xml:26:13-37
+61            android:grantUriPermissions="true" >
+61-->C:\Users\james\OneDrive\Documents\AI\VSCode\Peaklap\peaklap-1\frontend\android\app\src\main\AndroidManifest.xml:27:13-47
+62            <meta-data
+62-->C:\Users\james\OneDrive\Documents\AI\VSCode\Peaklap\peaklap-1\frontend\android\app\src\main\AndroidManifest.xml:28:13-112
+63                android:name="android.support.FILE_PROVIDER_PATHS"
+63-->C:\Users\james\OneDrive\Documents\AI\VSCode\Peaklap\peaklap-1\frontend\android\app\src\main\AndroidManifest.xml:28:24-74
+64                android:resource="@xml/file_paths" />
+64-->C:\Users\james\OneDrive\Documents\AI\VSCode\Peaklap\peaklap-1\frontend\android\app\src\main\AndroidManifest.xml:28:75-109
+65        </provider>
+66
+67        <activity
+67-->[com.revenuecat.purchases:purchases-ui:9.26.1] C:\Users\james\.gradle\caches\9.3.1\transforms\7f377742a7d129afef2ba05a2077416f\workspace\transformed\purchases-ui-9.26.1\AndroidManifest.xml:8:9-10:40
+68            android:name="com.revenuecat.purchases.ui.revenuecatui.activity.PaywallActivity"
+68-->[com.revenuecat.purchases:purchases-ui:9.26.1] C:\Users\james\.gradle\caches\9.3.1\transforms\7f377742a7d129afef2ba05a2077416f\workspace\transformed\purchases-ui-9.26.1\AndroidManifest.xml:9:13-93
+69            android:exported="false" />
+69-->[com.revenuecat.purchases:purchases-ui:9.26.1] C:\Users\james\.gradle\caches\9.3.1\transforms\7f377742a7d129afef2ba05a2077416f\workspace\transformed\purchases-ui-9.26.1\AndroidManifest.xml:10:13-37
+70        <activity
+70-->[com.revenuecat.purchases:purchases-ui:9.26.1] C:\Users\james\.gradle\caches\9.3.1\transforms\7f377742a7d129afef2ba05a2077416f\workspace\transformed\purchases-ui-9.26.1\AndroidManifest.xml:11:9-14:63
+71            android:name="com.revenuecat.purchases.ui.revenuecatui.customercenter.CustomerCenterActivity"
+71-->[com.revenuecat.purchases:purchases-ui:9.26.1] C:\Users\james\.gradle\caches\9.3.1\transforms\7f377742a7d129afef2ba05a2077416f\workspace\transformed\purchases-ui-9.26.1\AndroidManifest.xml:12:13-106
+72            android:exported="false"
+72-->[com.revenuecat.purchases:purchases-ui:9.26.1] C:\Users\james\.gradle\caches\9.3.1\transforms\7f377742a7d129afef2ba05a2077416f\workspace\transformed\purchases-ui-9.26.1\AndroidManifest.xml:13:13-37
+73            android:theme="@android:style/Theme.NoTitleBar" />
+73-->[com.revenuecat.purchases:purchases-ui:9.26.1] C:\Users\james\.gradle\caches\9.3.1\transforms\7f377742a7d129afef2ba05a2077416f\workspace\transformed\purchases-ui-9.26.1\AndroidManifest.xml:14:13-60
+74
+75        <receiver
+75-->[com.revenuecat.purchases:purchases-store-amazon:9.26.1] C:\Users\james\.gradle\caches\9.3.1\transforms\2e762c9bc1938699fd4138a05f884dff\workspace\transformed\purchases-store-amazon-9.26.1\AndroidManifest.xml:8:9-15:20
+76            android:name="com.amazon.device.iap.ResponseReceiver"
+76-->[com.revenuecat.purchases:purchases-store-amazon:9.26.1] C:\Users\james\.gradle\caches\9.3.1\transforms\2e762c9bc1938699fd4138a05f884dff\workspace\transformed\purchases-store-amazon-9.26.1\AndroidManifest.xml:9:13-66
+77            android:exported="true"
+77-->[com.revenuecat.purchases:purchases-store-amazon:9.26.1] C:\Users\james\.gradle\caches\9.3.1\transforms\2e762c9bc1938699fd4138a05f884dff\workspace\transformed\purchases-store-amazon-9.26.1\AndroidManifest.xml:10:13-36
+78            android:permission="com.amazon.inapp.purchasing.Permission.NOTIFY" >
+78-->[com.revenuecat.purchases:purchases-store-amazon:9.26.1] C:\Users\james\.gradle\caches\9.3.1\transforms\2e762c9bc1938699fd4138a05f884dff\workspace\transformed\purchases-store-amazon-9.26.1\AndroidManifest.xml:11:13-79
+79            <intent-filter>
+79-->[com.revenuecat.purchases:purchases-store-amazon:9.26.1] C:\Users\james\.gradle\caches\9.3.1\transforms\2e762c9bc1938699fd4138a05f884dff\workspace\transformed\purchases-store-amazon-9.26.1\AndroidManifest.xml:12:13-14:29
+80                <action android:name="com.amazon.inapp.purchasing.NOTIFY" />
+80-->[com.revenuecat.purchases:purchases-store-amazon:9.26.1] C:\Users\james\.gradle\caches\9.3.1\transforms\2e762c9bc1938699fd4138a05f884dff\workspace\transformed\purchases-store-amazon-9.26.1\AndroidManifest.xml:13:17-77
+80-->[com.revenuecat.purchases:purchases-store-amazon:9.26.1] C:\Users\james\.gradle\caches\9.3.1\transforms\2e762c9bc1938699fd4138a05f884dff\workspace\transformed\purchases-store-amazon-9.26.1\AndroidManifest.xml:13:25-74
+81            </intent-filter>
+82        </receiver>
+83
+84        <activity
+84-->[com.revenuecat.purchases:purchases:9.26.1] C:\Users\james\.gradle\caches\9.3.1\transforms\02a375f3eef924c46672cc8f4654c8e9\workspace\transformed\purchases-9.26.1\AndroidManifest.xml:10:9-13:75
+85            android:name="com.revenuecat.purchases.amazon.purchasing.ProxyAmazonBillingActivity"
+85-->[com.revenuecat.purchases:purchases:9.26.1] C:\Users\james\.gradle\caches\9.3.1\transforms\02a375f3eef924c46672cc8f4654c8e9\workspace\transformed\purchases-9.26.1\AndroidManifest.xml:11:13-97
+86            android:configChanges="keyboard|keyboardHidden|screenLayout|screenSize|orientation"
+86-->[com.revenuecat.purchases:purchases:9.26.1] C:\Users\james\.gradle\caches\9.3.1\transforms\02a375f3eef924c46672cc8f4654c8e9\workspace\transformed\purchases-9.26.1\AndroidManifest.xml:12:13-96
+87            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+87-->[com.revenuecat.purchases:purchases:9.26.1] C:\Users\james\.gradle\caches\9.3.1\transforms\02a375f3eef924c46672cc8f4654c8e9\workspace\transformed\purchases-9.26.1\AndroidManifest.xml:13:13-72
+88        <activity
+88-->[com.revenuecat.purchases:purchases:9.26.1] C:\Users\james\.gradle\caches\9.3.1\transforms\02a375f3eef924c46672cc8f4654c8e9\workspace\transformed\purchases-9.26.1\AndroidManifest.xml:14:9-18:74
+89            android:name="com.revenuecat.purchases.SimulatedStoreErrorDialogActivity"
+89-->[com.revenuecat.purchases:purchases:9.26.1] C:\Users\james\.gradle\caches\9.3.1\transforms\02a375f3eef924c46672cc8f4654c8e9\workspace\transformed\purchases-9.26.1\AndroidManifest.xml:15:13-86
+90            android:configChanges="orientation|screenSize"
+90-->[com.revenuecat.purchases:purchases:9.26.1] C:\Users\james\.gradle\caches\9.3.1\transforms\02a375f3eef924c46672cc8f4654c8e9\workspace\transformed\purchases-9.26.1\AndroidManifest.xml:16:13-59
+91            android:excludeFromRecents="true"
+91-->[com.revenuecat.purchases:purchases:9.26.1] C:\Users\james\.gradle\caches\9.3.1\transforms\02a375f3eef924c46672cc8f4654c8e9\workspace\transformed\purchases-9.26.1\AndroidManifest.xml:17:13-46
+92            android:theme="@android:style/Theme.Material.Dialog.Alert" />
+92-->[com.revenuecat.purchases:purchases:9.26.1] C:\Users\james\.gradle\caches\9.3.1\transforms\02a375f3eef924c46672cc8f4654c8e9\workspace\transformed\purchases-9.26.1\AndroidManifest.xml:18:13-71
+93
+94        <meta-data
+94-->[com.android.billingclient:billing:8.0.0] C:\Users\james\.gradle\caches\9.3.1\transforms\6b27ea4729fa1344f92a7a985cb4fc8d\workspace\transformed\billing-8.0.0\AndroidManifest.xml:22:9-24:37
+95            android:name="com.google.android.play.billingclient.version"
+95-->[com.android.billingclient:billing:8.0.0] C:\Users\james\.gradle\caches\9.3.1\transforms\6b27ea4729fa1344f92a7a985cb4fc8d\workspace\transformed\billing-8.0.0\AndroidManifest.xml:23:13-73
+96            android:value="8.0.0" />
+96-->[com.android.billingclient:billing:8.0.0] C:\Users\james\.gradle\caches\9.3.1\transforms\6b27ea4729fa1344f92a7a985cb4fc8d\workspace\transformed\billing-8.0.0\AndroidManifest.xml:24:13-34
+97
+98        <activity
+98-->[com.android.billingclient:billing:8.0.0] C:\Users\james\.gradle\caches\9.3.1\transforms\6b27ea4729fa1344f92a7a985cb4fc8d\workspace\transformed\billing-8.0.0\AndroidManifest.xml:26:9-30:75
+99            android:name="com.android.billingclient.api.ProxyBillingActivity"
+99-->[com.android.billingclient:billing:8.0.0] C:\Users\james\.gradle\caches\9.3.1\transforms\6b27ea4729fa1344f92a7a985cb4fc8d\workspace\transformed\billing-8.0.0\AndroidManifest.xml:27:13-78
+100            android:configChanges="keyboard|keyboardHidden|screenLayout|screenSize|orientation"
+100-->[com.android.billingclient:billing:8.0.0] C:\Users\james\.gradle\caches\9.3.1\transforms\6b27ea4729fa1344f92a7a985cb4fc8d\workspace\transformed\billing-8.0.0\AndroidManifest.xml:28:13-96
+101            android:exported="false"
+101-->[com.android.billingclient:billing:8.0.0] C:\Users\james\.gradle\caches\9.3.1\transforms\6b27ea4729fa1344f92a7a985cb4fc8d\workspace\transformed\billing-8.0.0\AndroidManifest.xml:29:13-37
+102            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+102-->[com.android.billingclient:billing:8.0.0] C:\Users\james\.gradle\caches\9.3.1\transforms\6b27ea4729fa1344f92a7a985cb4fc8d\workspace\transformed\billing-8.0.0\AndroidManifest.xml:30:13-72
+103        <activity
+103-->[com.android.billingclient:billing:8.0.0] C:\Users\james\.gradle\caches\9.3.1\transforms\6b27ea4729fa1344f92a7a985cb4fc8d\workspace\transformed\billing-8.0.0\AndroidManifest.xml:31:9-35:75
+104            android:name="com.android.billingclient.api.ProxyBillingActivityV2"
+104-->[com.android.billingclient:billing:8.0.0] C:\Users\james\.gradle\caches\9.3.1\transforms\6b27ea4729fa1344f92a7a985cb4fc8d\workspace\transformed\billing-8.0.0\AndroidManifest.xml:32:13-80
+105            android:configChanges="keyboard|keyboardHidden|screenLayout|screenSize|orientation"
+105-->[com.android.billingclient:billing:8.0.0] C:\Users\james\.gradle\caches\9.3.1\transforms\6b27ea4729fa1344f92a7a985cb4fc8d\workspace\transformed\billing-8.0.0\AndroidManifest.xml:33:13-96
+106            android:exported="false"
+106-->[com.android.billingclient:billing:8.0.0] C:\Users\james\.gradle\caches\9.3.1\transforms\6b27ea4729fa1344f92a7a985cb4fc8d\workspace\transformed\billing-8.0.0\AndroidManifest.xml:34:13-37
+107            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+107-->[com.android.billingclient:billing:8.0.0] C:\Users\james\.gradle\caches\9.3.1\transforms\6b27ea4729fa1344f92a7a985cb4fc8d\workspace\transformed\billing-8.0.0\AndroidManifest.xml:35:13-72
+108        <activity
+108-->[com.google.android.gms:play-services-base:18.5.0] C:\Users\james\.gradle\caches\9.3.1\transforms\8db64a1a84f430fe7f66cd7c01a7c2a0\workspace\transformed\play-services-base-18.5.0\AndroidManifest.xml:5:9-173
+109            android:name="com.google.android.gms.common.api.GoogleApiActivity"
+109-->[com.google.android.gms:play-services-base:18.5.0] C:\Users\james\.gradle\caches\9.3.1\transforms\8db64a1a84f430fe7f66cd7c01a7c2a0\workspace\transformed\play-services-base-18.5.0\AndroidManifest.xml:5:19-85
+110            android:exported="false"
+110-->[com.google.android.gms:play-services-base:18.5.0] C:\Users\james\.gradle\caches\9.3.1\transforms\8db64a1a84f430fe7f66cd7c01a7c2a0\workspace\transformed\play-services-base-18.5.0\AndroidManifest.xml:5:146-170
+111            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+111-->[com.google.android.gms:play-services-base:18.5.0] C:\Users\james\.gradle\caches\9.3.1\transforms\8db64a1a84f430fe7f66cd7c01a7c2a0\workspace\transformed\play-services-base-18.5.0\AndroidManifest.xml:5:86-145
+112
+113        <meta-data
+113-->[com.google.android.gms:play-services-basement:18.4.0] C:\Users\james\.gradle\caches\9.3.1\transforms\99c724334acfbad3fded630a8749fa64\workspace\transformed\play-services-basement-18.4.0\AndroidManifest.xml:6:9-122
+114            android:name="com.google.android.gms.version"
+114-->[com.google.android.gms:play-services-basement:18.4.0] C:\Users\james\.gradle\caches\9.3.1\transforms\99c724334acfbad3fded630a8749fa64\workspace\transformed\play-services-basement-18.4.0\AndroidManifest.xml:6:20-65
+115            android:value="@integer/google_play_services_version" />
+115-->[com.google.android.gms:play-services-basement:18.4.0] C:\Users\james\.gradle\caches\9.3.1\transforms\99c724334acfbad3fded630a8749fa64\workspace\transformed\play-services-basement-18.4.0\AndroidManifest.xml:6:66-119
+116
+117        <provider
+117-->[androidx.emoji2:emoji2:1.3.0] C:\Users\james\.gradle\caches\9.3.1\transforms\ab2c97a77e4cb2e5a75b0a5b162e48b7\workspace\transformed\emoji2-1.3.0\AndroidManifest.xml:24:9-32:20
+118            android:name="androidx.startup.InitializationProvider"
+118-->[androidx.emoji2:emoji2:1.3.0] C:\Users\james\.gradle\caches\9.3.1\transforms\ab2c97a77e4cb2e5a75b0a5b162e48b7\workspace\transformed\emoji2-1.3.0\AndroidManifest.xml:25:13-67
+119            android:authorities="com.peaklap.app.androidx-startup"
+119-->[androidx.emoji2:emoji2:1.3.0] C:\Users\james\.gradle\caches\9.3.1\transforms\ab2c97a77e4cb2e5a75b0a5b162e48b7\workspace\transformed\emoji2-1.3.0\AndroidManifest.xml:26:13-68
+120            android:exported="false" >
+120-->[androidx.emoji2:emoji2:1.3.0] C:\Users\james\.gradle\caches\9.3.1\transforms\ab2c97a77e4cb2e5a75b0a5b162e48b7\workspace\transformed\emoji2-1.3.0\AndroidManifest.xml:27:13-37
+121            <meta-data
+121-->[androidx.emoji2:emoji2:1.3.0] C:\Users\james\.gradle\caches\9.3.1\transforms\ab2c97a77e4cb2e5a75b0a5b162e48b7\workspace\transformed\emoji2-1.3.0\AndroidManifest.xml:29:13-31:52
+122                android:name="androidx.emoji2.text.EmojiCompatInitializer"
+122-->[androidx.emoji2:emoji2:1.3.0] C:\Users\james\.gradle\caches\9.3.1\transforms\ab2c97a77e4cb2e5a75b0a5b162e48b7\workspace\transformed\emoji2-1.3.0\AndroidManifest.xml:30:17-75
+123                android:value="androidx.startup" />
+123-->[androidx.emoji2:emoji2:1.3.0] C:\Users\james\.gradle\caches\9.3.1\transforms\ab2c97a77e4cb2e5a75b0a5b162e48b7\workspace\transformed\emoji2-1.3.0\AndroidManifest.xml:31:17-49
+124            <meta-data
+124-->[androidx.lifecycle:lifecycle-process:2.8.3] C:\Users\james\.gradle\caches\9.3.1\transforms\53ca2cbe4800d1d7bc3f8839a61de006\workspace\transformed\lifecycle-process-2.8.3\AndroidManifest.xml:29:13-31:52
+125                android:name="androidx.lifecycle.ProcessLifecycleInitializer"
+125-->[androidx.lifecycle:lifecycle-process:2.8.3] C:\Users\james\.gradle\caches\9.3.1\transforms\53ca2cbe4800d1d7bc3f8839a61de006\workspace\transformed\lifecycle-process-2.8.3\AndroidManifest.xml:30:17-78
+126                android:value="androidx.startup" />
+126-->[androidx.lifecycle:lifecycle-process:2.8.3] C:\Users\james\.gradle\caches\9.3.1\transforms\53ca2cbe4800d1d7bc3f8839a61de006\workspace\transformed\lifecycle-process-2.8.3\AndroidManifest.xml:31:17-49
+127            <meta-data
+127-->[androidx.profileinstaller:profileinstaller:1.4.0] C:\Users\james\.gradle\caches\9.3.1\transforms\7b0856c1234f8a04c377e9f3aeeb56ee\workspace\transformed\profileinstaller-1.4.0\AndroidManifest.xml:29:13-31:52
+128                android:name="androidx.profileinstaller.ProfileInstallerInitializer"
+128-->[androidx.profileinstaller:profileinstaller:1.4.0] C:\Users\james\.gradle\caches\9.3.1\transforms\7b0856c1234f8a04c377e9f3aeeb56ee\workspace\transformed\profileinstaller-1.4.0\AndroidManifest.xml:30:17-85
+129                android:value="androidx.startup" />
+129-->[androidx.profileinstaller:profileinstaller:1.4.0] C:\Users\james\.gradle\caches\9.3.1\transforms\7b0856c1234f8a04c377e9f3aeeb56ee\workspace\transformed\profileinstaller-1.4.0\AndroidManifest.xml:31:17-49
+130        </provider>
+131
+132        <uses-library
+132-->[androidx.window:window:1.3.0] C:\Users\james\.gradle\caches\9.3.1\transforms\9a9e6cc91a0cd918a438223bad828408\workspace\transformed\window-1.3.0\AndroidManifest.xml:23:9-25:40
+133            android:name="androidx.window.extensions"
+133-->[androidx.window:window:1.3.0] C:\Users\james\.gradle\caches\9.3.1\transforms\9a9e6cc91a0cd918a438223bad828408\workspace\transformed\window-1.3.0\AndroidManifest.xml:24:13-54
+134            android:required="false" />
+134-->[androidx.window:window:1.3.0] C:\Users\james\.gradle\caches\9.3.1\transforms\9a9e6cc91a0cd918a438223bad828408\workspace\transformed\window-1.3.0\AndroidManifest.xml:25:13-37
+135        <uses-library
+135-->[androidx.window:window:1.3.0] C:\Users\james\.gradle\caches\9.3.1\transforms\9a9e6cc91a0cd918a438223bad828408\workspace\transformed\window-1.3.0\AndroidManifest.xml:26:9-28:40
+136            android:name="androidx.window.sidecar"
+136-->[androidx.window:window:1.3.0] C:\Users\james\.gradle\caches\9.3.1\transforms\9a9e6cc91a0cd918a438223bad828408\workspace\transformed\window-1.3.0\AndroidManifest.xml:27:13-51
+137            android:required="false" />
+137-->[androidx.window:window:1.3.0] C:\Users\james\.gradle\caches\9.3.1\transforms\9a9e6cc91a0cd918a438223bad828408\workspace\transformed\window-1.3.0\AndroidManifest.xml:28:13-37
+138
+139        <receiver
+139-->[androidx.profileinstaller:profileinstaller:1.4.0] C:\Users\james\.gradle\caches\9.3.1\transforms\7b0856c1234f8a04c377e9f3aeeb56ee\workspace\transformed\profileinstaller-1.4.0\AndroidManifest.xml:34:9-52:20
+140            android:name="androidx.profileinstaller.ProfileInstallReceiver"
+140-->[androidx.profileinstaller:profileinstaller:1.4.0] C:\Users\james\.gradle\caches\9.3.1\transforms\7b0856c1234f8a04c377e9f3aeeb56ee\workspace\transformed\profileinstaller-1.4.0\AndroidManifest.xml:35:13-76
+141            android:directBootAware="false"
+141-->[androidx.profileinstaller:profileinstaller:1.4.0] C:\Users\james\.gradle\caches\9.3.1\transforms\7b0856c1234f8a04c377e9f3aeeb56ee\workspace\transformed\profileinstaller-1.4.0\AndroidManifest.xml:36:13-44
+142            android:enabled="true"
+142-->[androidx.profileinstaller:profileinstaller:1.4.0] C:\Users\james\.gradle\caches\9.3.1\transforms\7b0856c1234f8a04c377e9f3aeeb56ee\workspace\transformed\profileinstaller-1.4.0\AndroidManifest.xml:37:13-35
+143            android:exported="true"
+143-->[androidx.profileinstaller:profileinstaller:1.4.0] C:\Users\james\.gradle\caches\9.3.1\transforms\7b0856c1234f8a04c377e9f3aeeb56ee\workspace\transformed\profileinstaller-1.4.0\AndroidManifest.xml:38:13-36
+144            android:permission="android.permission.DUMP" >
+144-->[androidx.profileinstaller:profileinstaller:1.4.0] C:\Users\james\.gradle\caches\9.3.1\transforms\7b0856c1234f8a04c377e9f3aeeb56ee\workspace\transformed\profileinstaller-1.4.0\AndroidManifest.xml:39:13-57
+145            <intent-filter>
+145-->[androidx.profileinstaller:profileinstaller:1.4.0] C:\Users\james\.gradle\caches\9.3.1\transforms\7b0856c1234f8a04c377e9f3aeeb56ee\workspace\transformed\profileinstaller-1.4.0\AndroidManifest.xml:40:13-42:29
+146                <action android:name="androidx.profileinstaller.action.INSTALL_PROFILE" />
+146-->[androidx.profileinstaller:profileinstaller:1.4.0] C:\Users\james\.gradle\caches\9.3.1\transforms\7b0856c1234f8a04c377e9f3aeeb56ee\workspace\transformed\profileinstaller-1.4.0\AndroidManifest.xml:41:17-91
+146-->[androidx.profileinstaller:profileinstaller:1.4.0] C:\Users\james\.gradle\caches\9.3.1\transforms\7b0856c1234f8a04c377e9f3aeeb56ee\workspace\transformed\profileinstaller-1.4.0\AndroidManifest.xml:41:25-88
+147            </intent-filter>
+148            <intent-filter>
+148-->[androidx.profileinstaller:profileinstaller:1.4.0] C:\Users\james\.gradle\caches\9.3.1\transforms\7b0856c1234f8a04c377e9f3aeeb56ee\workspace\transformed\profileinstaller-1.4.0\AndroidManifest.xml:43:13-45:29
+149                <action android:name="androidx.profileinstaller.action.SKIP_FILE" />
+149-->[androidx.profileinstaller:profileinstaller:1.4.0] C:\Users\james\.gradle\caches\9.3.1\transforms\7b0856c1234f8a04c377e9f3aeeb56ee\workspace\transformed\profileinstaller-1.4.0\AndroidManifest.xml:44:17-85
+149-->[androidx.profileinstaller:profileinstaller:1.4.0] C:\Users\james\.gradle\caches\9.3.1\transforms\7b0856c1234f8a04c377e9f3aeeb56ee\workspace\transformed\profileinstaller-1.4.0\AndroidManifest.xml:44:25-82
+150            </intent-filter>
+151            <intent-filter>
+151-->[androidx.profileinstaller:profileinstaller:1.4.0] C:\Users\james\.gradle\caches\9.3.1\transforms\7b0856c1234f8a04c377e9f3aeeb56ee\workspace\transformed\profileinstaller-1.4.0\AndroidManifest.xml:46:13-48:29
+152                <action android:name="androidx.profileinstaller.action.SAVE_PROFILE" />
+152-->[androidx.profileinstaller:profileinstaller:1.4.0] C:\Users\james\.gradle\caches\9.3.1\transforms\7b0856c1234f8a04c377e9f3aeeb56ee\workspace\transformed\profileinstaller-1.4.0\AndroidManifest.xml:47:17-88
+152-->[androidx.profileinstaller:profileinstaller:1.4.0] C:\Users\james\.gradle\caches\9.3.1\transforms\7b0856c1234f8a04c377e9f3aeeb56ee\workspace\transformed\profileinstaller-1.4.0\AndroidManifest.xml:47:25-85
+153            </intent-filter>
+154            <intent-filter>
+154-->[androidx.profileinstaller:profileinstaller:1.4.0] C:\Users\james\.gradle\caches\9.3.1\transforms\7b0856c1234f8a04c377e9f3aeeb56ee\workspace\transformed\profileinstaller-1.4.0\AndroidManifest.xml:49:13-51:29
+155                <action android:name="androidx.profileinstaller.action.BENCHMARK_OPERATION" />
+155-->[androidx.profileinstaller:profileinstaller:1.4.0] C:\Users\james\.gradle\caches\9.3.1\transforms\7b0856c1234f8a04c377e9f3aeeb56ee\workspace\transformed\profileinstaller-1.4.0\AndroidManifest.xml:50:17-95
+155-->[androidx.profileinstaller:profileinstaller:1.4.0] C:\Users\james\.gradle\caches\9.3.1\transforms\7b0856c1234f8a04c377e9f3aeeb56ee\workspace\transformed\profileinstaller-1.4.0\AndroidManifest.xml:50:25-92
+156            </intent-filter>
+157        </receiver>
+158
+159        <service
+159-->[com.google.android.datatransport:transport-backend-cct:3.1.8] C:\Users\james\.gradle\caches\9.3.1\transforms\689c64c7981fb8fa6fd1aa3520b9430c\workspace\transformed\transport-backend-cct-3.1.8\AndroidManifest.xml:28:9-34:19
+160            android:name="com.google.android.datatransport.runtime.backends.TransportBackendDiscovery"
+160-->[com.google.android.datatransport:transport-backend-cct:3.1.8] C:\Users\james\.gradle\caches\9.3.1\transforms\689c64c7981fb8fa6fd1aa3520b9430c\workspace\transformed\transport-backend-cct-3.1.8\AndroidManifest.xml:29:13-103
+161            android:exported="false" >
+161-->[com.google.android.datatransport:transport-backend-cct:3.1.8] C:\Users\james\.gradle\caches\9.3.1\transforms\689c64c7981fb8fa6fd1aa3520b9430c\workspace\transformed\transport-backend-cct-3.1.8\AndroidManifest.xml:30:13-37
+162            <meta-data
+162-->[com.google.android.datatransport:transport-backend-cct:3.1.8] C:\Users\james\.gradle\caches\9.3.1\transforms\689c64c7981fb8fa6fd1aa3520b9430c\workspace\transformed\transport-backend-cct-3.1.8\AndroidManifest.xml:31:13-33:39
+163                android:name="backend:com.google.android.datatransport.cct.CctBackendFactory"
+163-->[com.google.android.datatransport:transport-backend-cct:3.1.8] C:\Users\james\.gradle\caches\9.3.1\transforms\689c64c7981fb8fa6fd1aa3520b9430c\workspace\transformed\transport-backend-cct-3.1.8\AndroidManifest.xml:32:17-94
+164                android:value="cct" />
+164-->[com.google.android.datatransport:transport-backend-cct:3.1.8] C:\Users\james\.gradle\caches\9.3.1\transforms\689c64c7981fb8fa6fd1aa3520b9430c\workspace\transformed\transport-backend-cct-3.1.8\AndroidManifest.xml:33:17-36
+165        </service>
+166        <service
+166-->[com.google.android.datatransport:transport-runtime:3.1.8] C:\Users\james\.gradle\caches\9.3.1\transforms\553296332f6ec23f8fc7988da09f79a8\workspace\transformed\transport-runtime-3.1.8\AndroidManifest.xml:26:9-30:19
+167            android:name="com.google.android.datatransport.runtime.scheduling.jobscheduling.JobInfoSchedulerService"
+167-->[com.google.android.datatransport:transport-runtime:3.1.8] C:\Users\james\.gradle\caches\9.3.1\transforms\553296332f6ec23f8fc7988da09f79a8\workspace\transformed\transport-runtime-3.1.8\AndroidManifest.xml:27:13-117
+168            android:exported="false"
+168-->[com.google.android.datatransport:transport-runtime:3.1.8] C:\Users\james\.gradle\caches\9.3.1\transforms\553296332f6ec23f8fc7988da09f79a8\workspace\transformed\transport-runtime-3.1.8\AndroidManifest.xml:28:13-37
+169            android:permission="android.permission.BIND_JOB_SERVICE" >
+169-->[com.google.android.datatransport:transport-runtime:3.1.8] C:\Users\james\.gradle\caches\9.3.1\transforms\553296332f6ec23f8fc7988da09f79a8\workspace\transformed\transport-runtime-3.1.8\AndroidManifest.xml:29:13-69
+170        </service>
+171
+172        <receiver
+172-->[com.google.android.datatransport:transport-runtime:3.1.8] C:\Users\james\.gradle\caches\9.3.1\transforms\553296332f6ec23f8fc7988da09f79a8\workspace\transformed\transport-runtime-3.1.8\AndroidManifest.xml:32:9-34:40
+173            android:name="com.google.android.datatransport.runtime.scheduling.jobscheduling.AlarmManagerSchedulerBroadcastReceiver"
+173-->[com.google.android.datatransport:transport-runtime:3.1.8] C:\Users\james\.gradle\caches\9.3.1\transforms\553296332f6ec23f8fc7988da09f79a8\workspace\transformed\transport-runtime-3.1.8\AndroidManifest.xml:33:13-132
+174            android:exported="false" />
+174-->[com.google.android.datatransport:transport-runtime:3.1.8] C:\Users\james\.gradle\caches\9.3.1\transforms\553296332f6ec23f8fc7988da09f79a8\workspace\transformed\transport-runtime-3.1.8\AndroidManifest.xml:34:13-37
+175    </application>
+176
+177</manifest>

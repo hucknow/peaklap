@@ -19,7 +19,7 @@ import { Heart, Mountain, TrendingUp, MapPin, Snowflake, Plus } from 'lucide-rea
 
 export default function Home() {
   const { profile } = useAuth();
-  const { selectedResort } = useResort();
+  const { selectedResort, isBackgroundSyncing } = useResort();
   const navigate = useNavigate();
   const [stats, setStats] = useState({ daysLogged: 0, verticalLogged: 0, completionPercent: 0, totalRuns: 0, completedRuns: 0 });
   const [bucketList, setBucketList] = useState([]);
@@ -283,14 +283,23 @@ export default function Home() {
         <h1 className="text-2xl font-bold text-white mb-1" style={{ fontFamily: 'Manrope, sans-serif' }}>
           <span style={{ color: '#00B4D8' }}>{userName}</span> — The mountains are waiting, own it. ⛷️
         </h1>
-        <button 
-          onClick={() => navigate('/history')}
-          className="text-sm transition-all hover:opacity-80"
-          style={{ color: 'rgba(255,255,255,0.6)' }}
-          data-testid="date-link"
-        >
-          {format(new Date(), 'EEEE, MMMM d')} →
-        </button>
+        <div className="flex items-center justify-between">
+          <button 
+            onClick={() => navigate('/history')}
+            className="text-sm transition-all hover:opacity-80"
+            style={{ color: 'rgba(255,255,255,0.6)' }}
+            data-testid="date-link"
+          >
+            {format(new Date(), 'EEEE, MMMM d')} →
+          </button>
+          
+          {isBackgroundSyncing && (
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full" style={{ backgroundColor: 'rgba(0, 180, 216, 0.1)', border: '1px solid rgba(0, 180, 216, 0.2)' }}>
+              <div className="w-1.5 h-1.5 rounded-full bg-[#00B4D8] animate-pulse"></div>
+              <span className="text-[10px] font-medium" style={{ color: '#00B4D8', fontFamily: 'Manrope, sans-serif' }}>Syncing offline data...</span>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Show Empty State or Regular Content */}

@@ -28,9 +28,9 @@ function LoadingScreen() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center" style={{ backgroundColor: '#12181B' }}>
       <img 
-        src="/src/PeakLap_Logo.png"
+        src="/PeakLap_Logo.png"
         alt="PeakLap Logo"
-        className="h-16 w-16 mb-4 animate-pulse"
+        className="h-48 w-48 mb-4 animate-pulse"
       />
       <div className="text-white text-sm" style={{ fontFamily: 'Manrope, sans-serif', color: 'rgba(255,255,255,0.6)' }}>
         Loading...

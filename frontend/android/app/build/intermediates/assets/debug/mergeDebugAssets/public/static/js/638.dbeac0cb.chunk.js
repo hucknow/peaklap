@@ -1,0 +1,2 @@
+"use strict";(globalThis.webpackChunkfrontend=globalThis.webpackChunkfrontend||[]).push([[638],{638(e,n,t){t.d(n,{Network:()=>o});const o=(0,t(403).F3)("Network",{web:()=>t.e(268).then(t.bind(t,268)).then(e=>new e.NetworkWeb)})}}]);
+//# sourceMappingURL=638.dbeac0cb.chunk.js.map

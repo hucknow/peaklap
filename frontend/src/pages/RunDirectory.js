@@ -6,6 +6,8 @@ import { BottomNav } from '@/components/BottomNav';
 import { GlassCard } from '@/components/GlassCard';
 import { DifficultyBadge } from '@/components/DifficultyBadge';
 import { supabase } from '@/lib/supabase';
+import { offlineStorage } from '@/lib/offline';
+import { useOnlineStatus } from '@/lib/hooks';
 import { Search, Heart, Mountain, Check } from 'lucide-react';
 
 // Status colors
@@ -45,6 +47,7 @@ const isThisSeason = (date) => {
 
 export default function RunDirectory() {
   const { profile } = useAuth();
+  const isOnline = useOnlineStatus();
   const navigate = useNavigate();
   const [runs, setRuns] = useState([]);
   const [filteredRuns, setFilteredRuns] = useState([]);
@@ -80,30 +83,67 @@ export default function RunDirectory() {
 
   const loadRuns = useCallback(async () => {
     if (runsLoadedRef.current) return;
-    const { data } = await supabase.from('runs').select('*').order('name');
-    if (data) {
-      setRuns(data);
-      runsLoadedRef.current = true;
+    
+    try {
+      const cached = await offlineStorage.getCachedRuns('all_directory');
+      if (cached && cached.length > 0) {
+        setRuns(cached);
+      }
+      
+      if (isOnline) {
+        const { data } = await supabase.from('runs').select('*').order('name');
+        if (data) {
+          setRuns(data);
+          runsLoadedRef.current = true;
+          await offlineStorage.cacheRuns('all_directory', data);
+        }
+      }
+    } catch (err) {
+      console.error('Error loading directory runs:', err);
     }
-  }, []);
+  }, [isOnline]);
 
   const loadBucketList = useCallback(async () => {
     if (!profile?.id || bucketLoadedRef.current) return;
-    const { data } = await supabase.from('bucket_list').select('run_id').eq('user_id', profile.id);
-    if (data) {
-      setBucketListIds(data.map(item => item.run_id));
-      bucketLoadedRef.current = true;
+    
+    try {
+      const cached = await offlineStorage.getCachedBucketList(profile.id);
+      if (cached && cached.length > 0) {
+        setBucketListIds(cached.map(item => item.run_id));
+      }
+      
+      if (isOnline) {
+        const { data } = await supabase.from('bucket_list').select('run_id').eq('user_id', profile.id);
+        if (data) {
+          setBucketListIds(data.map(item => item.run_id));
+          bucketLoadedRef.current = true;
+        }
+      }
+    } catch (err) {
+      console.error('Error loading bucket list:', err);
     }
-  }, [profile?.id]);
+  }, [profile?.id, isOnline]);
 
   const loadUserLogs = useCallback(async () => {
     if (!profile?.id || logsLoadedRef.current) return;
-    const { data } = await supabase.from('user_logs').select('run_id, logged_at').eq('user_id', profile.id);
-    if (data) {
-      setUserLogs(data);
-      logsLoadedRef.current = true;
+    
+    try {
+      const cached = await offlineStorage.getCachedLogs(profile.id);
+      if (cached && cached.length > 0) {
+        setUserLogs(cached);
+      }
+      
+      if (isOnline) {
+        const { data } = await supabase.from('user_logs').select('run_id, logged_at').eq('user_id', profile.id);
+        if (data) {
+          setUserLogs(data);
+          logsLoadedRef.current = true;
+        }
+      }
+    } catch (err) {
+      console.error('Error loading user logs:', err);
     }
-  }, [profile?.id]);
+  }, [profile?.id, isOnline]);
 
   const getRunStatus = useCallback((runId) => {
     const runLogs = userLogs.filter(log => log.run_id === runId);

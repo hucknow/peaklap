@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useAuth } from './AuthContext';
 import { supabase } from '@/lib/supabase';
-import { offlineStorage, checkOnlineStatus, getCurrentPosition } from '@/lib/offline';
+import { offlineStorage, checkOnlineStatus, getCurrentPosition, downloadAndCacheMap } from '@/lib/offline';
 
 const ResortContext = createContext({});
 
@@ -17,6 +17,7 @@ export function ResortProvider({ children }) {
   const [detectedResort, setDetectedResort] = useState(null);
   const [isDetecting, setIsDetecting] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [isBackgroundSyncing, setIsBackgroundSyncing] = useState(false);
 
   // Resort lists
   const [allResorts, setAllResorts] = useState([]);
@@ -333,6 +334,78 @@ export function ResortProvider({ children }) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]); // Only depend on userId primitive
 
+  // Background Sync: User Data (Logs, Bucket List)
+  useEffect(() => {
+    let isMounted = true;
+    const syncUserData = async () => {
+      if (!userId || !checkOnlineStatus()) return;
+      
+      try {
+        // Sync all user logs for history
+        const { data: logs } = await supabase
+          .from('user_logs')
+          .select('*, runs(name, difficulty, vertical_ft, zone), lifts(name, vertical_ft), ski_areas(name), parent_log_id, log_type')
+          .eq('user_id', userId)
+          .order('logged_at', { ascending: false })
+          .limit(500); // Plenty for standard offline caching
+          
+        if (logs && isMounted) await offlineStorage.cacheLogs(userId, logs);
+
+        // Sync bucket list
+        const { data: bucket } = await supabase
+          .from('bucket_list')
+          .select('*')
+          .eq('user_id', userId);
+          
+        if (bucket && isMounted) await offlineStorage.cacheBucketList(userId, bucket);
+      } catch (err) {
+        console.error('Background user sync failed:', err);
+      }
+    };
+
+    syncUserData();
+    return () => { isMounted = false; };
+  }, [userId]);
+
+  // Background Sync: Resort Data (Runs, Lifts, Map)
+  useEffect(() => {
+    let isMounted = true;
+    const syncResortData = async () => {
+      if (!selectedResort?.id || !checkOnlineStatus()) return;
+
+      setIsBackgroundSyncing(true);
+      try {
+        const cachedRuns = await offlineStorage.getCachedRuns(selectedResort.id);
+        const cachedLifts = await offlineStorage.getCachedLifts(selectedResort.id);
+
+        // Fetch fresh runs
+        const { data: runs } = await supabase.from('runs').select('*').eq('ski_area_id', selectedResort.id).order('zone, name');
+        // Pseudo-delta check: only write to disk if data changed
+        if (runs && isMounted && JSON.stringify(runs) !== JSON.stringify(cachedRuns)) {
+          await offlineStorage.cacheRuns(selectedResort.id, runs);
+        }
+
+        // Fetch fresh lifts
+        const { data: lifts } = await supabase.from('lifts').select('*').eq('ski_area_id', selectedResort.id).order('name');
+        if (lifts && isMounted && JSON.stringify(lifts) !== JSON.stringify(cachedLifts)) {
+          await offlineStorage.cacheLifts(selectedResort.id, lifts);
+        }
+
+        // Cache high-res trail map image to filesystem
+        if (selectedResort.map_url && isMounted) {
+          await downloadAndCacheMap(selectedResort.id, selectedResort.map_url);
+        }
+      } catch (err) {
+        console.error('Background resort sync failed:', err);
+      } finally {
+        if (isMounted) setIsBackgroundSyncing(false);
+      }
+    };
+
+    syncResortData();
+    return () => { isMounted = false; };
+  }, [selectedResort?.id]);
+
   // Clear current resort (reset to primary)
   const clearCurrentResort = useCallback(async () => {
     if (primaryResort) {
@@ -366,6 +439,7 @@ export function ResortProvider({ children }) {
     setSelectedResort,     // Set current resort
     primaryResort,         // Home mountain (user's preference)
     loading,
+    isBackgroundSyncing,
 
     // GPS detection
     detectedResort,
@@ -385,7 +459,7 @@ export function ResortProvider({ children }) {
     loadResorts,
     loadUserResorts
   }), [
-    selectedResort, primaryResort, loading, detectedResort, isDetecting, 
+    selectedResort, primaryResort, loading, isBackgroundSyncing, detectedResort, isDetecting, 
     allResorts, recentResorts, myResorts, isAtDifferentResort, 
     setSelectedResort, detectResort, clearCurrentResort, loadResorts, loadUserResorts
   ]);
